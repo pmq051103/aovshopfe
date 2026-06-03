@@ -1,0 +1,296 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Exo 2', sans-serif;
+    background-color: #050508;
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a12; }
+  ::-webkit-scrollbar-thumb { background: #ff2d73; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #ff5f99; }
+}
+
+@layer components {
+  /* Gaming Card */
+  .gaming-card {
+    @apply relative bg-dark-600 border border-white/5 rounded-xl overflow-hidden;
+    background: linear-gradient(145deg, rgba(20,20,31,0.9), rgba(10,10,18,0.95));
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: all 0.3s ease;
+  }
+  .gaming-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,45,115,0.03), transparent 50%, rgba(139,92,246,0.03));
+    pointer-events: none;
+  }
+  .gaming-card:hover {
+    border-color: rgba(255,45,115,0.3);
+    box-shadow: 0 0 30px rgba(255,45,115,0.1), 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(-2px);
+  }
+
+  /* Neon Button */
+  .btn-neon {
+    @apply relative px-6 py-3 font-display font-bold text-sm uppercase tracking-wider rounded-lg overflow-hidden;
+    @apply bg-transparent border border-neon-pink text-neon-pink;
+    @apply transition-all duration-300;
+    text-shadow: 0 0 10px rgba(255,45,115,0.5);
+  }
+  .btn-neon::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,45,115,0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+  }
+  .btn-neon:hover::before { transform: translateX(100%); }
+  .btn-neon:hover {
+    background: rgba(255,45,115,0.15);
+    box-shadow: 0 0 20px rgba(255,45,115,0.4), 0 0 40px rgba(255,45,115,0.2);
+    border-color: #ff5f99;
+  }
+
+  .btn-primary {
+    @apply relative px-6 py-3 font-display font-bold text-sm uppercase tracking-wider rounded-lg overflow-hidden;
+    @apply text-white transition-all duration-300;
+    background: linear-gradient(135deg, #ff2d73, #8b5cf6);
+    box-shadow: 0 4px 20px rgba(255,45,115,0.3);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 6px 30px rgba(255,45,115,0.5), 0 0 60px rgba(255,45,115,0.2);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* Gradient Text */
+  .text-gradient {
+    background: linear-gradient(90deg, #ff2d73, #8b5cf6, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-gold {
+    background: linear-gradient(90deg, #ffd700, #ffb800, #ff8c00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Rarity Colors */
+  .rarity-common { @apply text-gray-400; }
+  .rarity-rare { @apply text-blue-400; text-shadow: 0 0 10px rgba(96,165,250,0.5); }
+  .rarity-epic { @apply text-purple-400; text-shadow: 0 0 10px rgba(167,139,250,0.5); }
+  .rarity-legendary { @apply text-yellow-400; text-shadow: 0 0 10px rgba(251,191,36,0.5); }
+  .rarity-mythic { @apply text-red-400; text-shadow: 0 0 15px rgba(248,113,113,0.8); animation: glow 1.5s ease-in-out infinite alternate; }
+
+  /* Neon Border */
+  .border-neon { border: 1px solid rgba(255,45,115,0.3); box-shadow: inset 0 0 20px rgba(255,45,115,0.05); }
+  .border-neon-blue { border: 1px solid rgba(0,212,255,0.3); box-shadow: inset 0 0 20px rgba(0,212,255,0.05); }
+  .border-neon-purple { border: 1px solid rgba(139,92,246,0.3); box-shadow: inset 0 0 20px rgba(139,92,246,0.05); }
+
+  /* Input Gaming */
+  .input-gaming {
+    @apply w-full bg-dark-700 border border-white/10 rounded-lg px-4 py-3;
+    @apply text-white placeholder-white/30 font-body;
+    @apply focus:outline-none focus:border-neon-pink/50 focus:shadow-none;
+    @apply transition-all duration-300;
+  }
+  .input-gaming:focus {
+    box-shadow: 0 0 0 2px rgba(255,45,115,0.1), inset 0 0 20px rgba(255,45,115,0.02);
+  }
+
+  /* Animated background */
+  .bg-animated {
+    position: relative;
+    background: #050508;
+  }
+  .bg-animated::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,45,115,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(139,92,246,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 0% 100%, rgba(0,212,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    @apply rounded-lg;
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Rank badge */
+  .rank-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold uppercase;
+  }
+
+  /* Page container */
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* Swiper custom styles */
+.swiper-pagination-bullet {
+  background: rgba(255,255,255,0.3) !important;
+  width: 8px !important;
+  height: 8px !important;
+}
+.swiper-pagination-bullet-active {
+  background: #ff2d73 !important;
+  box-shadow: 0 0 10px rgba(255,45,115,0.8) !important;
+  width: 24px !important;
+  border-radius: 4px !important;
+}
+
+/* Animated grid background */
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(255,45,115,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,45,115,0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Glitch effect */
+.glitch {
+  position: relative;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+}
+.glitch::before {
+  color: #ff2d73;
+  animation: glitch-1 0.5s infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  transform: translateX(-2px);
+}
+.glitch::after {
+  color: #00d4ff;
+  animation: glitch-2 0.5s infinite;
+  clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  transform: translateX(2px);
+}
+
+@keyframes glitch-1 {
+  0%,100% { transform: translateX(-2px); opacity: 0.7; }
+  50% { transform: translateX(2px); opacity: 0; }
+}
+@keyframes glitch-2 {
+  0%,100% { transform: translateX(2px); opacity: 0.7; }
+  50% { transform: translateX(-2px); opacity: 0; }
+}
+
+/* Scanline overlay */
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+  pointer-events: none;
+}
+
+/* Number counter animation */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Particle animation */
+@keyframes particle {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .gaming-card:hover { transform: none; }
+}
+/* ── ReactQuill dark theme override ─────────────────────────── */
+.quill-dark .ql-toolbar {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+.quill-dark .ql-container {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0 0 0.5rem 0.5rem;
+  font-size: 14px;
+  min-height: 160px;
+}
+.quill-dark .ql-editor {
+  color: rgba(255, 255, 255, 0.8);
+  min-height: 140px;
+}
+.quill-dark .ql-editor.ql-blank::before {
+  color: rgba(255, 255, 255, 0.25);
+}
+.quill-dark .ql-toolbar .ql-stroke {
+  stroke: rgba(255, 255, 255, 0.5);
+}
+.quill-dark .ql-toolbar .ql-fill {
+  fill: rgba(255, 255, 255, 0.5);
+}
+.quill-dark .ql-toolbar .ql-picker {
+  color: rgba(255, 255, 255, 0.5);
+}
+.quill-dark .ql-toolbar .ql-picker-options {
+  background: #1a1a2e;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.quill-dark .ql-toolbar button:hover .ql-stroke,
+.quill-dark .ql-toolbar button.ql-active .ql-stroke {
+  stroke: #ff2d73;
+}
+.quill-dark .ql-toolbar button:hover .ql-fill,
+.quill-dark .ql-toolbar button.ql-active .ql-fill {
+  fill: #ff2d73;
+}
+.quill-dark .ql-toolbar .ql-picker-label:hover,
+.quill-dark .ql-toolbar .ql-picker-item:hover {
+  color: #ff2d73;
+}
+
+.homepage-hero-swiper .swiper-button-prev {
+  left: 18px !important;
+}
+
+.homepage-hero-swiper .swiper-button-next {
+  right: 18px !important;
+}
+
+.homepage-hero-swiper .swiper-button-prev,
+.homepage-hero-swiper .swiper-button-next {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.homepage-hero-swiper .swiper-button-prev::after,
+.homepage-hero-swiper .swiper-button-next::after {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
