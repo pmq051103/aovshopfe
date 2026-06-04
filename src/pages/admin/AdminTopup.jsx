@@ -40,19 +40,28 @@ function OrderDetailModal({ order, onClose, onRefresh }) {
   const total = (order.package?.quanHuyAmount || 0) + (order.package?.bonusQuanHuy || 0)
 
   const action = async (type) => {
-    setLoading(type)
-    try {
-      if (type === 'process') await api.put(`/topup/admin/orders/${order.id}/process`)
-      else if (type === 'complete') await api.put(`/topup/admin/orders/${order.id}/complete`, { adminNote })
-      else if (type === 'cancel') await api.put(`/topup/admin/orders/${order.id}/cancel`, { adminNote })
-      onRefresh()
-      onClose()
-    } catch (e) {
-      toast.error(e.response?.data?.message || 'Lỗi')
-    } finally {
-      setLoading(null)
+  setLoading(type)
+
+  try {
+    if (type === 'process') {
+      await api.put(`/topup/admin/orders/${order.id}/process`)
+      toast.success('Đã chuyển đơn sang trạng thái đang xử lý')
+    } else if (type === 'complete') {
+      await api.put(`/topup/admin/orders/${order.id}/complete`, { adminNote })
+      toast.success('Đã xác nhận nạp Quân Huy thành công')
+    } else if (type === 'cancel') {
+      await api.put(`/topup/admin/orders/${order.id}/cancel`, { adminNote })
+      toast.success('Đã hủy đơn nạp và hoàn tiền')
     }
+
+    await onRefresh()
+    onClose()
+  } catch (e) {
+    toast.error(e.response?.data?.message || 'Lỗi')
+  } finally {
+    setLoading(null)
   }
+}
 
   const s = STATUS_CONFIG[order.status] || STATUS_CONFIG.PENDING
 
@@ -429,22 +438,33 @@ export default function AdminTopup() {
 
       {tab === 'orders' && (
         <>
-          <div className="flex gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-48">
-              <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-xs" />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Tìm user, ID game, mã đơn..."
-                className="input-gaming w-full text-sm py-2.5 pl-9"
-              />
-            </div>
+          <div className="flex gap-3 flex-wrap items-center">
+  <div className="relative w-72">
+    <FontAwesomeIcon
+      icon={faSearch}
+      className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-xs"
+    />
+    <input
+      value={search}
+      onChange={e => setSearch(e.target.value)}
+      placeholder="Tìm user, ID game, mã đơn..."
+      className="input-gaming w-full text-sm py-2.5 pl-9"
+    />
+  </div>
 
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input-gaming text-sm py-2.5 pr-8">
-              <option value="">Tất cả trạng thái</option>
-              {Object.entries(STATUS_CONFIG).map(([v, c]) => <option key={v} value={v}>{c.label}</option>)}
-            </select>
-          </div>
+  <select
+    value={statusFilter}
+    onChange={e => setStatusFilter(e.target.value)}
+    className="input-gaming w-48 text-sm py-2.5 pr-8"
+  >
+    <option value="">Tất cả trạng thái</option>
+    {Object.entries(STATUS_CONFIG).map(([v, c]) => (
+      <option key={v} value={v}>
+        {c.label}
+      </option>
+    ))}
+  </select>
+</div>
 
           {loading ? (
             <div className="flex justify-center py-12"><Spinner size="lg" /></div>

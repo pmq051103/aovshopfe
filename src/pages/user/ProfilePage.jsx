@@ -113,110 +113,123 @@ export default function ProfilePage() {
       icon: faGem,
       label: 'Số dư',
       value: formatCurrency(user?.balance),
-      color: 'text-yellow-400'
+      color: 'text-yellow-400',
+      glow: 'from-yellow-400/20'
     },
     {
       icon: faCoins,
       label: 'Quân Huy',
       value: `${(user?.quanHuyBalance || 0).toLocaleString('vi-VN')} QH`,
-      color: 'text-orange-400'
+      color: 'text-orange-400',
+      glow: 'from-orange-400/20'
     },
     {
       icon: faMoneyBillWave,
       label: 'Tổng nạp',
       value: formatCurrency(user?.totalDeposit),
-      color: 'text-neon-green'
+      color: 'text-neon-green',
+      glow: 'from-neon-green/20'
     },
     {
       icon: faCartShopping,
       label: 'Tổng chi',
       value: formatCurrency(user?.totalSpent),
-      color: 'text-neon-pink'
+      color: 'text-neon-pink',
+      glow: 'from-neon-pink/20'
     },
   ]
 
   return (
     <div className="pt-20 pb-20 min-h-screen">
-      <div className="page-container max-w-3xl">
+      <div className="page-container max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="gaming-card p-8 mb-6"
+          className="gaming-card p-5 sm:p-6 md:p-8 mb-6 overflow-hidden relative"
         >
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <div className="relative group">
-              <img
-                src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`}
-                alt={user?.displayName}
-                className="w-24 h-24 rounded-2xl border-2 border-neon-pink/30 object-cover"
-              />
+          <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/5 via-transparent to-neon-blue/5 pointer-events-none" />
+          <div className="absolute -top-24 -right-24 w-56 h-56 bg-neon-pink/10 rounded-full blur-3xl pointer-events-none" />
 
-              <button
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-              >
-                {uploading ? (
-                  <Spinner size="sm" />
-                ) : (
-                  <span className="text-white text-xs flex items-center gap-1">
-                    <FontAwesomeIcon icon={faCamera} />
-                    Đổi ảnh
-                  </span>
-                )}
-              </button>
+          <div className="relative z-10 space-y-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6">
+              <div className="relative group shrink-0">
+                <img
+                  src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`}
+                  alt={user?.displayName}
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border-2 border-neon-pink/30 object-cover shadow-[0_0_30px_rgba(255,45,115,0.18)]"
+                />
 
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarUpload}
-              />
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="absolute inset-0 rounded-3xl bg-black/55 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                >
+                  {uploading ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <span className="text-white text-xs flex items-center gap-1">
+                      <FontAwesomeIcon icon={faCamera} />
+                      Đổi ảnh
+                    </span>
+                  )}
+                </button>
+
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                />
+              </div>
+
+              <div className="flex-1 min-w-0 text-center sm:text-left">
+                <div className="flex items-center gap-2 justify-center sm:justify-start mb-2">
+                  <h1 className="font-gaming text-3xl sm:text-4xl font-black text-white leading-tight break-words">
+                    {user?.displayName || user?.username}
+                  </h1>
+
+                  {user?.role === 'ADMIN' && (
+                    <span className="px-2 py-0.5 bg-neon-pink/20 text-neon-pink text-xs rounded-lg font-bold border border-neon-pink/30 shrink-0">
+                      ADMIN
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-white/45 text-sm mb-1 truncate">
+                  @{user?.username}
+                </div>
+
+                <div className="text-white/30 text-xs truncate">
+                  {user?.email}
+                </div>
+
+                <div className="text-white/25 text-xs mt-1">
+                  Tham gia: {formatDate(user?.createdAt)}
+                </div>
+              </div>
             </div>
 
-            <div className="flex-1 text-center sm:text-left">
-              <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
-                <h1 className="font-gaming text-2xl font-bold text-white">
-                  {user?.displayName || user?.username}
-                </h1>
-
-                {user?.role === 'ADMIN' && (
-                  <span className="px-2 py-0.5 bg-neon-pink/20 text-neon-pink text-xs rounded font-bold border border-neon-pink/30">
-                    ADMIN
-                  </span>
-                )}
-              </div>
-
-              <div className="text-white/40 text-sm mb-1">
-                @{user?.username}
-              </div>
-
-              <div className="text-white/30 text-xs">
-                {user?.email}
-              </div>
-
-              <div className="text-white/20 text-xs mt-1">
-                Tham gia: {formatDate(user?.createdAt)}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {stats.map(s => (
                 <div
                   key={s.label}
-                  className="gaming-card p-3 text-center min-w-[90px]"
+                  className="relative overflow-hidden rounded-2xl border border-white/10 bg-dark-800/60 p-4 text-center shadow-lg"
                 >
-                  <div className={`text-xl mb-1 ${s.color}`}>
-                    <FontAwesomeIcon icon={s.icon} />
-                  </div>
+                  <div className={`absolute inset-0 bg-gradient-to-br ${s.glow} via-transparent to-transparent opacity-60 pointer-events-none`} />
 
-                  <div className={`font-bold text-sm ${s.color}`}>
-                    {s.value}
-                  </div>
+                  <div className="relative z-10">
+                    <div className={`text-2xl mb-2 ${s.color}`}>
+                      <FontAwesomeIcon icon={s.icon} />
+                    </div>
 
-                  <div className="text-white/30 text-xs">
-                    {s.label}
+                    <div className={`font-gaming text-base sm:text-lg font-black ${s.color} leading-tight break-words`}>
+                      {s.value}
+                    </div>
+
+                    <div className="text-white/35 text-[11px] uppercase tracking-wider mt-1 font-display">
+                      {s.label}
+                    </div>
                   </div>
                 </div>
               ))}

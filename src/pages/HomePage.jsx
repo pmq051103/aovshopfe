@@ -397,11 +397,11 @@ function ActivityTicker({ items = [] }) {
                   <FontAwesomeIcon icon={cfg.icon} className="text-[10px]" />
                   {cfg.text}
                 </span>
-                {item.detail && (
+                {/* {item.detail && (
                   <span className="text-white/35 italic truncate max-w-[120px]">
                     "{item.detail}"
                   </span>
-                )}
+                )} */}
                 <span className="text-white/20 ml-2">·</span>
               </span>
             )
@@ -888,44 +888,19 @@ export default function HomePage() {
           setWheelRewards(wheelRes.value.data.data?.rewards || [])
         }
 
-        // Tạo activity feed từ wheel winners (dữ liệu thực có sẵn)
-        // Kết hợp thêm activity type mua acc dựa trên ranking nếu có
-        const winners = winnersRes.status === 'fulfilled' ? (winnersRes.value.data.data || []) : []
-        const rankUsers = rankingRes.status === 'fulfilled' ? (rankingRes.value.data.data || []) : []
-
-        const activities = []
-
-        winners.slice(0, 8).forEach(w => {
-          activities.push({
-            username: w.user?.username || w.username,
-            type: 'SPIN',
-            detail: w.prize?.name || w.prizeName,
-          })
-        })
-
-        rankUsers.slice(0, 5).forEach(r => {
-          activities.push({
-            username: r.user?.username,
-            type: 'PURCHASE',
-            detail: null,
-          })
-        })
-
-        // Nếu chưa đủ 8, thêm activity giả dựa trên tên game phổ biến
-        if (activities.length < 6) {
-          const fakeNames = ['Minh***', 'Hoa***', 'Long***', 'Ngoc***', 'Tuan***', 'Linh***']
-          const fakeTypes = ['PURCHASE', 'MYSTERY_BOX', 'SPIN', 'TOPUP_PURCHASE']
-          fakeNames.forEach((name, i) => {
-            activities.push({
-              username: name,
-              type: fakeTypes[i % fakeTypes.length],
-              detail: null,
-              isMock: true,
-            })
-          })
+        // Lấy activity thực từ transaction history
+        try {
+          const activityRes = await api.get('/activity/recent')
+          const activities = (activityRes.data.data || []).map(t => ({
+            username: t.username,
+            type: t.type,
+            detail: t.label,
+            amount: t.amount,
+          }))
+          setRecentActivities(activities)
+        } catch {
+          setRecentActivities([])
         }
-
-        setRecentActivities(activities)
       } finally {
         setLoading(false)
       }

@@ -387,7 +387,7 @@ export default function TopupPage() {
     setSelected(null)
     dispatch(fetchMe())
     await fetchOrders(1)
-    setTab('orders')
+    // setTab('orders')
   }
 
   if (loading) {
