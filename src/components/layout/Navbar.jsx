@@ -330,10 +330,16 @@ export default function Navbar() {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute right-0 top-12 w-80 gaming-card border border-white/10 shadow-2xl"
+                       className="
+fixed left-4 right-4 top-16
+  max-w-[320px] mx-auto
+  gaming-card border border-white/10 shadow-2xl z-[9998]
+
+  lg:absolute lg:left-auto lg:right-0 lg:mx-0
+  lg:max-w-none lg:w-[260px] lg:top-12"
                       >
-                        <div className="flex items-center justify-between p-4 border-b border-white/5">
-                          <span className="font-display font-bold text-white">Thông báo</span>
+                        <div className="flex items-center justify-between p-3 border-b border-white/5">
+                          <span className="font-display font-bold text-white text-sm">Thông báo</span>
 
                           {unread > 0 && (
                             <button
@@ -345,21 +351,21 @@ export default function Navbar() {
                           )}
                         </div>
 
-                        <div className="max-h-96 overflow-y-auto">
+                        <div className="max-h-44 lg:max-h-60 overflow-y-auto">
                           {notifications.length === 0 ? (
-                            <div className="p-6 text-center text-white/40">
+                            <div className="p-6 text-center text-white/40 text-sm">
                               Không có thông báo
                             </div>
                           ) : (
                             notifications.map(n => (
                               <div
                                 key={n.id}
-                                className={`p-3 border-b border-white/5 hover:bg-white/3 transition-colors ${
+                                className={`px-2.5 py-1.5 border-b border-white/5 hover:bg-white/3 transition-colors ${
                                   !n.isRead ? 'bg-neon-pink/5' : ''
                                 }`}
                               >
-                                <div className="font-medium text-sm text-white">{n.title}</div>
-                                <div className="text-xs text-white/50 mt-0.5">{n.message}</div>
+                                <div className="font-medium text-xs text-white leading-snug">{n.title}</div>
+                                <div className="text-[11px] text-white/50 mt-0.5 leading-snug">{n.message}</div>
                               </div>
                             ))
                           )}
@@ -454,11 +460,11 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Link to="/login" className="btn-neon py-2 px-4 text-xs hidden sm:block">
+                <Link to="/login" className="btn-neon py-2 px-4 text-xs">
                   Đăng Nhập
                 </Link>
 
-                <Link to="/register" className="btn-primary py-2 px-4 text-xs">
+                <Link to="/register" className="btn-primary py-2 px-4 text-xs hidden sm:block">
                   Đăng Ký
                 </Link>
               </div>

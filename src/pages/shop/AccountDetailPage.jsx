@@ -41,11 +41,60 @@ import {
   faPhone,
   faCircleCheck,
   faXmark,
+
+  faFire,
+  faStar,
+  faTrophy,
+  faCoins,
+  faDice,
+  faDragon,
+  faGhost,
+  faSkull,
+  faRocket,
+  faMedal,
+  faHeart,
+  faHammer,
+  faBomb,
+  faKey,
+  faFolderOpen,
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
   faSquareFacebook
 } from '@fortawesome/free-brands-svg-icons'
+
+const ICON_MAP = {
+  gamepad: faGamepad,
+  crown: faCrown,
+  gem: faGem,
+  fire: faFire,
+  star: faStar,
+  trophy: faTrophy,
+  coins: faCoins,
+  shield: faShieldHalved,
+  dice: faDice,
+  bolt: faBolt,
+  dragon: faDragon,
+  ghost: faGhost,
+  skull: faSkull,
+  rocket: faRocket,
+  medal: faMedal,
+  wand: faWandMagicSparkles,
+  heart: faHeart,
+  hammer: faHammer,
+  bomb: faBomb,
+  key: faKey,
+  folder: faFolderOpen,
+}
+
+function CategoryIcon({ value, className = '' }) {
+  return (
+    <FontAwesomeIcon
+      icon={ICON_MAP[value] || faGamepad}
+      className={className}
+    />
+  )
+}
 
 const maskEmail = email => {
   if (!email) return ''
@@ -198,7 +247,7 @@ export default function AccountDetailPage() {
     },
     {
       icon: <FontAwesomeIcon icon={faGem} />,
-      label: 'Gem',
+      label: 'Quân Huy',
       value: account.gems?.toLocaleString() || 0,
     },
     {
@@ -377,11 +426,11 @@ export default function AccountDetailPage() {
                 </span>
 
                 {category && (
-                  <span className="text-xs bg-purple-500/20 text-purple-300 border border-purple-400/30 px-2 py-0.5 rounded">
-                    {category.icon ? `${category.icon} ` : ''}
-                    {category.name}
-                  </span>
-                )}
+  <span className="text-xs bg-purple-500/20 text-purple-300 border border-purple-400/30 px-2 py-0.5 rounded flex items-center gap-1">
+    <CategoryIcon value={category.icon} />
+    {category.name}
+  </span>
+)}
 
                 {account.isVerified && (
                   <span className="text-xs bg-blue-500/20 text-blue-400 border border-blue-400/30 px-2 py-0.5 rounded">

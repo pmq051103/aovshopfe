@@ -4,13 +4,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faXmark, faClock } from '@fortawesome/free-solid-svg-icons'
 import api from '../../api/axios'
 
-const DISMISS_KEY = 'ann_dismissed' // localStorage key lưu danh sách đã tắt 1h
+const DISMISS_KEY = 'ann_dismissed'
 
 function getExpiredDismissals() {
   try {
     const raw = JSON.parse(localStorage.getItem(DISMISS_KEY) || '{}')
     const now = Date.now()
-    // Xoá các key đã hết hạn 1h
     const cleaned = Object.fromEntries(Object.entries(raw).filter(([, ts]) => now - ts < 3600_000))
     localStorage.setItem(DISMISS_KEY, JSON.stringify(cleaned))
     return cleaned
@@ -26,9 +25,9 @@ function dismissFor1h(id) {
 }
 
 export default function AnnouncementPopup() {
-  const [queue, setQueue]       = useState([])   // danh sách ann chưa hiển thị
-  const [current, setCurrent]   = useState(null)  // ann đang hiện
-  const [visible, setVisible]   = useState(false)
+  const [queue, setQueue]     = useState([])
+  const [current, setCurrent] = useState(null)
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -37,8 +36,6 @@ export default function AnnouncementPopup() {
         const { data } = await api.get('/announcements/active')
         const anns = data.data || []
         const dismissed = getExpiredDismissals()
-
-        // Lọc những cái chưa bị tắt 1h
         const pending = anns.filter(a => !dismissed[a.id])
         if (!cancelled && pending.length > 0) {
           setQueue(pending.slice(1))
@@ -47,12 +44,10 @@ export default function AnnouncementPopup() {
         }
       } catch {}
     }
-    // Delay nhỏ để trang load xong mới hiện popup
     const t = setTimeout(load, 800)
     return () => { cancelled = true; clearTimeout(t) }
   }, [])
 
-  // Khi queue còn item, hiện tiếp
   const showNext = () => {
     if (queue.length > 0) {
       setCurrent(queue[0])
@@ -91,41 +86,39 @@ export default function AnnouncementPopup() {
             onClick={handleClose}
           />
 
-          {/* Modal */}
-          <motion.div
-            key={current.id}
-            initial={{ opacity: 0, scale: 0.88, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 20 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-            className="fixed z-[1000] inset-0 flex items-center justify-center p-4 pointer-events-none"
-          >
-            <div
-              className="pointer-events-auto w-full max-w-lg bg-dark-800 border border-white/10 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden"
+          {/* Wrapper căn giữa — KHÔNG dùng inset-0 làm flex container */}
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4 py-8 pointer-events-none">
+            <motion.div
+              key={current.id}
+              initial={{ opacity: 0, scale: 0.88, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 16 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
               onClick={e => e.stopPropagation()}
+              className="pointer-events-auto w-[88vw] max-w-xs bg-dark-800 border border-white/10 rounded-2xl shadow-2xl shadow-black/60 flex flex-col overflow-hidden"
+              style={{ maxHeight: 'calc(100vh - 64px)' }}
             >
               {/* Header */}
-              <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5 bg-gradient-to-r from-neon-pink/10 to-orange-500/5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-pink to-orange-500 flex items-center justify-center text-white text-sm flex-shrink-0 shadow-lg shadow-pink-500/20">
+              <div className="flex items-center gap-2.5 px-4 py-3 border-b border-white/5 bg-gradient-to-r from-neon-pink/10 to-orange-500/5 flex-shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-neon-pink to-orange-500 flex items-center justify-center text-white text-xs flex-shrink-0">
                   <FontAwesomeIcon icon={faBell} />
                 </div>
-                <h2 className="flex-1 font-display font-bold text-white text-base leading-tight">
+                <h2 className="flex-1 font-display font-bold text-white text-sm leading-tight line-clamp-2">
                   {current.title}
                 </h2>
                 <button
                   onClick={handleClose}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
-                  title="Đóng"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
                 >
                   <FontAwesomeIcon icon={faXmark} />
                 </button>
               </div>
 
-              {/* Content */}
+              {/* Content — scroll bên trong */}
               <div
-                className="px-5 py-4 text-sm text-white/80 leading-relaxed max-h-[60vh] overflow-y-auto
-                  [&_h1]:text-white [&_h1]:font-bold [&_h1]:text-xl [&_h1]:mb-2
-                  [&_h2]:text-white [&_h2]:font-bold [&_h2]:text-lg [&_h2]:mb-2
+                className="px-4 py-3 text-xs text-white/80 leading-relaxed overflow-y-auto flex-1
+                  [&_h1]:text-white [&_h1]:font-bold [&_h1]:text-base [&_h1]:mb-2
+                  [&_h2]:text-white [&_h2]:font-bold [&_h2]:text-sm [&_h2]:mb-1
                   [&_h3]:text-white [&_h3]:font-semibold [&_h3]:mb-1
                   [&_strong]:text-white [&_strong]:font-semibold
                   [&_em]:text-white/70
@@ -135,35 +128,34 @@ export default function AnnouncementPopup() {
                   [&_a]:text-neon-pink [&_a]:underline [&_a]:underline-offset-2
                   [&_blockquote]:border-l-2 [&_blockquote]:border-pink-500/40 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-white/50
                   [&_img]:rounded-lg [&_img]:max-w-full [&_img]:my-2
-                  [&_p]:mb-2 last:[&_p]:mb-0"
+                  [&_p]:mb-1.5 last:[&_p]:mb-0"
                 dangerouslySetInnerHTML={{ __html: current.content }}
               />
 
               {/* Footer */}
-              <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-white/5 bg-dark-900/30">
+              <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-t border-white/5 bg-dark-900/30 flex-shrink-0">
                 <button
                   onClick={handleDismiss1h}
-                  className="flex items-center gap-1.5 text-xs text-white/35 hover:text-white/60 transition-colors"
-                  title="Tắt thông báo này trong 1 giờ"
+                  className="flex items-center gap-1 text-[11px] text-white/35 hover:text-white/60 transition-colors"
                 >
                   <FontAwesomeIcon icon={faClock} />
-                  Tắt trong 1 giờ
+                  Tắt 1 giờ
                 </button>
 
                 <div className="flex items-center gap-2">
                   {queue.length > 0 && (
-                    <span className="text-xs text-white/30">{queue.length} thông báo tiếp theo</span>
+                    <span className="text-[10px] text-white/30">+{queue.length} thông báo</span>
                   )}
                   <button
                     onClick={handleClose}
-                    className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-neon-pink to-orange-500 text-white text-xs font-semibold hover:opacity-90 transition shadow-md shadow-pink-500/20"
+                    className="px-3 py-1 rounded-lg bg-gradient-to-r from-neon-pink to-orange-500 text-white text-[11px] font-semibold hover:opacity-90 transition"
                   >
                     Đã hiểu
                   </button>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

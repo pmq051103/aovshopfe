@@ -496,14 +496,6 @@ export default function OwnedAccountsPage() {
 
   useEffect(() => { fetchOwned() }, [page, source, search])
 
-  // Debounce search 400ms
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setSearch(searchInput)
-      setPage(1)
-    }, 400)
-    return () => clearTimeout(t)
-  }, [searchInput])
 
   const filterTabs = [
     { value: '', label: 'Tất cả', icon: faInbox },
@@ -526,31 +518,45 @@ export default function OwnedAccountsPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 mb-6">
+        <form
+          className="flex flex-wrap items-center gap-2 mb-6"
+          onSubmit={e => { e.preventDefault(); setSearch(searchInput.trim()); setPage(1) }}
+        >
 
   {/* Search */}
-  <div className="relative w-full sm:w-64 md:w-72 flex-shrink-0">
-    <FontAwesomeIcon
-      icon={faSearch}
-      className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-xs"
-    />
+  <div className="flex items-center gap-2 flex-shrink-0">
+    <div className="relative w-40 sm:w-52">
+      <FontAwesomeIcon
+        icon={faSearch}
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-xs"
+      />
 
-    <input
-      type="text"
-      value={searchInput}
-      onChange={e => setSearchInput(e.target.value)}
-      placeholder="Tìm mã acc..."
-      className="w-full bg-dark-700 border border-white/10 rounded-xl pl-9 pr-8 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-neon-pink/40 transition-colors"
-    />
+      <input
+        type="text"
+        value={searchInput}
+        onChange={e => setSearchInput(e.target.value)}
+        placeholder="Tìm mã acc..."
+        className="w-full bg-dark-700 border border-white/10 rounded-xl pl-9 pr-8 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-neon-pink/40 transition-colors"
+      />
 
-    {searchInput && (
-      <button
-        onClick={() => setSearchInput('')}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
-      >
-        <FontAwesomeIcon icon={faXmark} />
-      </button>
-    )}
+      {searchInput && (
+        <button
+          type="button"
+          onClick={() => { setSearchInput(''); setSearch(''); setPage(1) }}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
+      )}
+    </div>
+
+    <button
+      type="submit"
+      className="flex-shrink-0 w-9 h-9 rounded-xl bg-neon-pink/20 border border-neon-pink/40 text-neon-pink hover:bg-neon-pink/30 transition-colors flex items-center justify-center"
+      title="Tìm kiếm"
+    >
+      <FontAwesomeIcon icon={faSearch} className="text-sm" />
+    </button>
   </div>
 
   {/* Filter */}
@@ -558,6 +564,7 @@ export default function OwnedAccountsPage() {
     {filterTabs.map(t => (
       <button
         key={t.value}
+        type="button"
         onClick={() => {
           setSource(t.value)
           setPage(1)
@@ -574,7 +581,7 @@ export default function OwnedAccountsPage() {
     ))}
   </div>
 
-</div>
+</form>
 
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

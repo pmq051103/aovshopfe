@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
 import AccountCard from '../../components/shop/AccountCard'
@@ -123,6 +123,24 @@ export default function ShopPage() {
   const [params, setParams] = useState(defaultParams)
   const [searchInput, setSearchInput] = useState('')
 
+  // Local state cho các ô input số + skinName để tránh call API mỗi keystroke
+  const [localInputs, setLocalInputs] = useState({
+    minPrice: '', maxPrice: '',
+    minSkins: '', maxSkins: '',
+    minChampions: '', maxChampions: '',
+    skinName: '',
+  })
+  const debounceTimers = useRef({})
+
+  // Debounce helper: chờ 700ms sau keystroke cuối mới gọi API
+  const updateParamDebounced = (key, val) => {
+    setLocalInputs(p => ({ ...p, [key]: val }))
+    if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key])
+    debounceTimers.current[key] = setTimeout(() => {
+      setParams(p => ({ ...p, [key]: val, page: 1 }))
+    }, 700)
+  }
+
   useEffect(() => {
     setCatLoading(true)
 
@@ -137,6 +155,7 @@ export default function ShopPage() {
 
     setParams(defaultParams)
     setSearchInput('')
+    setLocalInputs({ minPrice: '', maxPrice: '', minSkins: '', maxSkins: '', minChampions: '', maxChampions: '', skinName: '' })
   }, [slug])
 
   const fetchAccounts = useCallback(async () => {
@@ -181,6 +200,7 @@ export default function ShopPage() {
   const clearFilters = () => {
     setParams(defaultParams)
     setSearchInput('')
+    setLocalInputs({ minPrice: '', maxPrice: '', minSkins: '', maxSkins: '', minChampions: '', maxChampions: '', skinName: '' })
   }
 
   const activeFiltersCount = [
@@ -287,37 +307,43 @@ export default function ShopPage() {
                 Tìm kiếm
               </label>
 
-              <div className="relative mb-3">
-                <FontAwesomeIcon
-                  icon={faSearch}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25 text-sm"
-                />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <FontAwesomeIcon
+                    icon={faSearch}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25 text-sm"
+                  />
 
-                <input
-                  type="text"
-                  value={searchInput}
-                  onChange={e => setSearchInput(e.target.value)}
-                  placeholder="Tên, code, rank..."
-                  className="input-gaming w-full pl-9 pr-9 text-sm"
-                />
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
+                    placeholder="Tên, code, rank..."
+                    className="input-gaming w-full pl-9 pr-9 text-sm"
+                  />
 
-                {searchInput && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchInput('')
-                      updateParam('search', '')
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
-                  >
-                    <FontAwesomeIcon icon={faXmark} />
-                  </button>
-                )}
+                  {searchInput && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchInput('')
+                        updateParam('search', '')
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
+                    >
+                      <FontAwesomeIcon icon={faXmark} />
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-primary px-3 py-2 text-sm flex-shrink-0"
+                  title="Tìm kiếm"
+                >
+                  <FontAwesomeIcon icon={faSearch} />
+                </button>
               </div>
-
-              <button type="submit" className="btn-primary w-full py-2.5 text-sm">
-                Tìm kiếm
-              </button>
             </form>
 
             <div className="space-y-4">
@@ -457,16 +483,16 @@ export default function ShopPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
-                    value={params.minPrice}
-                    onChange={e => updateParam('minPrice', e.target.value)}
+                    value={localInputs.minPrice}
+                    onChange={e => updateParamDebounced('minPrice', e.target.value)}
                     placeholder="Từ"
                     className="input-gaming text-sm py-2"
                   />
 
                   <input
                     type="number"
-                    value={params.maxPrice}
-                    onChange={e => updateParam('maxPrice', e.target.value)}
+                    value={localInputs.maxPrice}
+                    onChange={e => updateParamDebounced('maxPrice', e.target.value)}
                     placeholder="Đến"
                     className="input-gaming text-sm py-2"
                   />
@@ -488,14 +514,10 @@ export default function ShopPage() {
                     <button
                       type="button"
                       key={label}
-                      onClick={() =>
-                        setParams(p => ({
-                          ...p,
-                          minPrice: min,
-                          maxPrice: max,
-                          page: 1,
-                        }))
-                      }
+                      onClick={() => {
+                        setLocalInputs(p => ({ ...p, minPrice: min, maxPrice: max }))
+                        setParams(p => ({ ...p, minPrice: min, maxPrice: max, page: 1 }))
+                      }}
                       className={`px-3 py-1 rounded-full text-xs border transition-all ${
                         params.minPrice === min && params.maxPrice === max
                           ? 'bg-neon-pink/20 border-neon-pink/50 text-neon-pink'
@@ -516,16 +538,16 @@ export default function ShopPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
-                    value={params.minSkins}
-                    onChange={e => updateParam('minSkins', e.target.value)}
+                    value={localInputs.minSkins}
+                    onChange={e => updateParamDebounced('minSkins', e.target.value)}
                     placeholder="Từ"
                     className="input-gaming text-sm py-2"
                   />
 
                   <input
                     type="number"
-                    value={params.maxSkins}
-                    onChange={e => updateParam('maxSkins', e.target.value)}
+                    value={localInputs.maxSkins}
+                    onChange={e => updateParamDebounced('maxSkins', e.target.value)}
                     placeholder="Đến"
                     className="input-gaming text-sm py-2"
                   />
@@ -540,16 +562,16 @@ export default function ShopPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
-                    value={params.minChampions}
-                    onChange={e => updateParam('minChampions', e.target.value)}
+                    value={localInputs.minChampions}
+                    onChange={e => updateParamDebounced('minChampions', e.target.value)}
                     placeholder="Từ"
                     className="input-gaming text-sm py-2"
                   />
 
                   <input
                     type="number"
-                    value={params.maxChampions}
-                    onChange={e => updateParam('maxChampions', e.target.value)}
+                    value={localInputs.maxChampions}
+                    onChange={e => updateParamDebounced('maxChampions', e.target.value)}
                     placeholder="Đến"
                     className="input-gaming text-sm py-2"
                   />
@@ -563,8 +585,8 @@ export default function ShopPage() {
 
                 <input
                   type="text"
-                  value={params.skinName}
-                  onChange={e => updateParam('skinName', e.target.value)}
+                  value={localInputs.skinName}
+                  onChange={e => updateParamDebounced('skinName', e.target.value)}
                   placeholder="VD: Nakroth"
                   className="input-gaming w-full text-sm py-2"
                 />
@@ -581,12 +603,11 @@ export default function ShopPage() {
                       <button
                         type="button"
                         key={s.skinName}
-                        onClick={() =>
-                          updateParam(
-                            'skinName',
-                            params.skinName === s.skinName ? '' : s.skinName
-                          )
-                        }
+                        onClick={() => {
+                          const val = params.skinName === s.skinName ? '' : s.skinName
+                          setLocalInputs(p => ({ ...p, skinName: val }))
+                          updateParam('skinName', val)
+                        }}
                         className={`px-3 py-1 rounded-full text-xs border transition-all ${
                           params.skinName === s.skinName
                             ? 'bg-neon-blue/20 border-neon-blue/50 text-neon-blue'

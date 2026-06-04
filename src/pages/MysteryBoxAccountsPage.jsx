@@ -461,14 +461,6 @@ export default function MysteryBoxAccountsPage() {
     setPage(1)
   }, [slug, rarityFilter, search])
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setSearch(searchInput)
-      setPage(1)
-    }, 400)
-
-    return () => clearTimeout(t)
-  }, [searchInput])
 
   const handleOpen = async () => {
     if (!user) {
@@ -717,8 +709,11 @@ export default function MysteryBoxAccountsPage() {
             )
           })}
         </div>
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <div className="relative w-full sm:w-64 md:w-72">
+        <form
+          className="flex items-center gap-2 mb-4"
+          onSubmit={e => { e.preventDefault(); setSearch(searchInput.trim()); setPage(1) }}
+        >
+          <div className="relative flex-1 max-w-xs">
             <FontAwesomeIcon
               icon={faSearch}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-xs"
@@ -734,14 +729,23 @@ export default function MysteryBoxAccountsPage() {
 
             {searchInput && (
               <button
-                onClick={() => setSearchInput('')}
+                type="button"
+                onClick={() => { setSearchInput(''); setSearch(''); setPage(1) }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
               >
                 <FontAwesomeIcon icon={faXmark} />
               </button>
             )}
           </div>
-        </div>
+
+          <button
+            type="submit"
+            className="flex-shrink-0 w-9 h-9 rounded-xl bg-neon-pink/20 border border-neon-pink/40 text-neon-pink hover:bg-neon-pink/30 transition-colors flex items-center justify-center"
+            title="Tìm kiếm"
+          >
+            <FontAwesomeIcon icon={faSearch} className="text-sm" />
+          </button>
+        </form>
 
         {loading ? (
           <div className="flex justify-center py-20">

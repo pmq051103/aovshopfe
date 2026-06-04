@@ -15,7 +15,8 @@ import {
   faUser,
   faLock,
   faFloppyDisk,
-  faKey
+  faKey,
+  faCoins
 } from '@fortawesome/free-solid-svg-icons'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -115,6 +116,12 @@ export default function ProfilePage() {
       color: 'text-yellow-400'
     },
     {
+      icon: faCoins,
+      label: 'Quân Huy',
+      value: `${(user?.quanHuyBalance || 0).toLocaleString('vi-VN')} QH`,
+      color: 'text-orange-400'
+    },
+    {
       icon: faMoneyBillWave,
       label: 'Tổng nạp',
       value: formatCurrency(user?.totalDeposit),
@@ -194,7 +201,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {stats.map(s => (
                 <div
                   key={s.label}
