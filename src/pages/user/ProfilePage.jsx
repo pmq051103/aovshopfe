@@ -62,7 +62,8 @@ export default function ProfilePage() {
       fd.append('avatar', file)
 
       const { data } = await api.post('/users/avatar', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 60000
       })
 
       dispatch(updateUser({ avatar: data.data.avatar }))
