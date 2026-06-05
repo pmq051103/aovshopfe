@@ -32,6 +32,7 @@ import {
   faCheck,
   faBan,
   faPaperPlane,
+  faEye,
   faTriangleExclamation,
   faWrench,
 } from '@fortawesome/free-solid-svg-icons'
@@ -206,6 +207,104 @@ function ConfigForm({ initial, onSave, onClose, saving }) {
     denom > 0 ? Math.round(denom * (1 - form.buyDiscount / 100)) : 0
 
   const activeTelco = form.telco?.toUpperCase()
+
+  // ── View Detail Modal ──────────────────────────────────────
+  const ViewModal = () => {
+    if (!viewTarget) return null
+    const { type, data } = viewTarget
+    const isPurchase = type === 'purchase'
+
+    const cards = isPurchase
+      ? (typeof data.cards === 'string' ? JSON.parse(data.cards || '[]') : (data.cards || []))
+      : (typeof data.cards === 'string' ? JSON.parse(data.cards || '[]') : (data.cards || []))
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setViewTarget(null)}>
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+        <div className="relative z-10 w-full max-w-lg gaming-card p-6 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-gaming text-lg font-black text-white">
+              {isPurchase ? '🎫 Chi Tiết Mua Thẻ' : '💳 Chi Tiết Nạp Thẻ'}
+            </h3>
+            <button onClick={() => setViewTarget(null)} className="text-white/40 hover:text-white text-xl">✕</button>
+          </div>
+
+          {/* Info */}
+          <div className="space-y-2 mb-5">
+            {[
+              { label: 'Người dùng', value: data.user?.displayName || data.user?.username || '—' },
+              { label: 'Email', value: data.user?.email || '—' },
+              isPurchase
+                ? { label: 'Nhà mạng', value: data.cardConfig?.telcoLabel || data.telco }
+                : { label: 'Nhà mạng', value: data.telco },
+              { label: 'Mệnh giá', value: formatCurrency(data.denomination) },
+              isPurchase
+                ? { label: 'Số lượng', value: data.quantity }
+                : null,
+              { label: 'Tổng tiền', value: formatCurrency(data.totalPrice || data.amount) },
+              { label: 'Trạng thái', value: data.status },
+              { label: 'Thời gian', value: formatDate(data.createdAt) },
+              data.note ? { label: 'Ghi chú', value: data.note } : null,
+              data.message ? { label: 'Message', value: data.message } : null,
+            ].filter(Boolean).map(row => (
+              <div key={row.label} className="flex gap-3 text-sm">
+                <span className="text-white/40 w-28 shrink-0">{row.label}</span>
+                <span className="text-white font-medium break-all">{row.value}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Cards */}
+          {cards.length > 0 && (
+            <div>
+              <p className="text-xs text-white/40 uppercase tracking-wider font-bold mb-3">Mã thẻ ({cards.length})</p>
+              <div className="space-y-2">
+                {cards.map((c, i) => (
+                  <div key={i} className="bg-dark-700/60 border border-white/10 rounded-xl p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-white/40 text-xs">Thẻ {i + 1}</span>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(`${c.code || c.serial || ''}`)}
+                        className="text-neon-blue text-xs hover:text-white"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <div className="space-y-1">
+                      {(c.code || c.serial) && (
+                        <div className="flex gap-2 text-xs">
+                          <span className="text-white/40 w-16 shrink-0">Mã thẻ:</span>
+                          <span className="text-yellow-400 font-mono font-bold break-all">{c.code || c.serial}</span>
+                        </div>
+                      )}
+                      {(c.seri || c.serial_number) && (
+                        <div className="flex gap-2 text-xs">
+                          <span className="text-white/40 w-16 shrink-0">Serial:</span>
+                          <span className="text-white/70 font-mono break-all">{c.seri || c.serial_number}</span>
+                        </div>
+                      )}
+                      {c.expireDate && (
+                        <div className="flex gap-2 text-xs">
+                          <span className="text-white/40 w-16 shrink-0">HSD:</span>
+                          <span className="text-white/50 font-mono">{c.expireDate}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {cards.length === 0 && (
+            <div className="text-center text-white/30 text-sm py-4">
+              {isPurchase ? 'Chưa có mã thẻ' : 'Không có thông tin thẻ'}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-5">
@@ -592,6 +691,9 @@ export default function AdminCardConfig() {
   const [depUpdateTarget, setDepUpdateTarget] = useState(null)
   const [depUpdateForm, setDepUpdateForm] = useState({ status: 'SUCCESS', realAmount: '', note: '' })
   const [depUpdating, setDepUpdating] = useState(false)
+
+  // Modal xem chi tiết
+  const [viewTarget, setViewTarget] = useState(null)
 
   // Modal gửi thẻ thủ công cho mua thẻ
   const [purResendTarget, setPurResendTarget] = useState(null)
@@ -1192,15 +1294,24 @@ export default function AdminCardConfig() {
                           </td>
 
                           <td className="p-4">
-                            {d.status === 'PENDING' && (
+                            <div className="flex gap-2 items-center">
                               <button
-                                onClick={() => openDepUpdate(d)}
-                                className="px-3 py-1.5 rounded-lg bg-neon-pink/20 text-neon-pink hover:bg-neon-pink/30 text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                                onClick={() => setViewTarget({ type: 'deposit', data: d })}
+                                className="px-3 py-1.5 rounded-lg bg-neon-blue/20 text-neon-blue hover:bg-neon-blue/30 text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap"
                               >
-                                <FontAwesomeIcon icon={faWrench} />
-                                Xử lý
+                                <FontAwesomeIcon icon={faEye} />
+                                Xem
                               </button>
-                            )}
+                              {d.status === 'PENDING' && (
+                                <button
+                                  onClick={() => openDepUpdate(d)}
+                                  className="px-3 py-1.5 rounded-lg bg-neon-pink/20 text-neon-pink hover:bg-neon-pink/30 text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                                >
+                                  <FontAwesomeIcon icon={faWrench} />
+                                  Xử lý
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )
@@ -1356,15 +1467,24 @@ export default function AdminCardConfig() {
                           </td>
 
                           <td className="p-4">
-                            {(p.status === 'FAILED' || p.status === 'PENDING') && (
+                            <div className="flex gap-2 items-center">
                               <button
-                                onClick={() => openPurResend(p)}
-                                className="px-3 py-1.5 rounded-lg bg-neon-green/20 text-neon-green hover:bg-neon-green/30 text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                                onClick={() => setViewTarget({ type: 'purchase', data: p })}
+                                className="px-3 py-1.5 rounded-lg bg-neon-blue/20 text-neon-blue hover:bg-neon-blue/30 text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap"
                               >
-                                <FontAwesomeIcon icon={faPaperPlane} />
-                                Gửi thẻ
+                                <FontAwesomeIcon icon={faEye} />
+                                Xem
                               </button>
-                            )}
+                              {(p.status === 'FAILED' || p.status === 'PENDING') && (
+                                <button
+                                  onClick={() => openPurResend(p)}
+                                  className="px-3 py-1.5 rounded-lg bg-neon-green/20 text-neon-green hover:bg-neon-green/30 text-xs transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                                >
+                                  <FontAwesomeIcon icon={faPaperPlane} />
+                                  Gửi thẻ
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )
@@ -1616,6 +1736,11 @@ export default function AdminCardConfig() {
             </div>
           </Modal>
         )}
+      </AnimatePresence>
+
+      {/* View Detail Modal */}
+      <AnimatePresence>
+        {viewTarget && <ViewModal />}
       </AnimatePresence>
     </div>
   )
