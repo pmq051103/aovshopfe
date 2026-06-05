@@ -33,6 +33,7 @@ import {
   faBan,
   faPaperPlane,
   faEye,
+  faCopy,
   faTriangleExclamation,
   faWrench,
 } from '@fortawesome/free-solid-svg-icons'
@@ -818,19 +819,22 @@ export default function AdminCardConfig() {
         <div className="relative z-10 w-full max-w-lg gaming-card p-6 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
           <div className="flex items-center justify-between mb-5">
             <h3 className="font-gaming text-lg font-black text-white">
-              {isPurchase ? '🎫 Chi Tiết Mua Thẻ' : '💳 Chi Tiết Nạp Thẻ'}
+              <FontAwesomeIcon icon={isPurchase ? faBoxOpen : faMoneyBillWave} className="mr-2 text-neon-pink" />
+              {isPurchase ? 'Chi Tiết Mua Thẻ' : 'Chi Tiết Nạp Thẻ'}
             </h3>
-            <button onClick={() => setViewTarget(null)} className="text-white/40 hover:text-white text-xl">✕</button>
+            <button onClick={() => setViewTarget(null)} className="text-white/40 hover:text-white text-lg"><FontAwesomeIcon icon={faXmark} /></button>
           </div>
 
           <div className="space-y-2 mb-5">
             {[
               { label: 'Người dùng', value: data.user?.displayName || data.user?.username || '—' },
               { label: 'Email', value: data.user?.email || '—' },
-              { label: 'Nhà mạng', value: isPurchase ? (data.cardConfig?.telcoLabel || data.telco) : data.telco },
-              { label: 'Mệnh giá', value: formatCurrency(data.denomination) },
+              { label: 'Loại thẻ', value: isPurchase ? (data.cardConfig?.telcoLabel || data.telco) : data.telco },
+              { label: 'Mệnh giá', value: formatCurrency(isPurchase ? data.denomination : data.declaredAmount) },
               isPurchase ? { label: 'Số lượng', value: data.quantity } : null,
-              { label: 'Tổng tiền', value: formatCurrency(data.totalPrice || data.amount) },
+              isPurchase
+                ? { label: 'Tổng tiền', value: formatCurrency(data.totalPrice) }
+                : { label: 'Thực nhận', value: formatCurrency(data.receivedAmount) },
               { label: 'Trạng thái', value: data.status },
               { label: 'Thời gian', value: formatDate(data.createdAt) },
               data.note ? { label: 'Ghi chú', value: data.note } : null,
@@ -843,27 +847,56 @@ export default function AdminCardConfig() {
             ))}
           </div>
 
-          {cards.length > 0 ? (
+          {/* Nạp thẻ: code + serial trực tiếp trên record */}
+          {!isPurchase && (data.code || data.serial) && (
             <div>
-              <p className="text-xs text-white/40 uppercase tracking-wider font-bold mb-3">Mã thẻ ({cards.length})</p>
+              <p className="text-xs text-white/40 uppercase tracking-wider font-bold mb-3">Thông Tin Thẻ</p>
+              <div className="bg-dark-700/60 border border-white/10 rounded-xl p-3 space-y-2">
+                {data.code && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-2 text-xs flex-1">
+                      <span className="text-white/40 w-16 shrink-0">Mã thẻ:</span>
+                      <span className="text-yellow-400 font-mono font-bold break-all">{data.code}</span>
+                    </div>
+                    <button onClick={() => navigator.clipboard.writeText(data.code)} className="text-neon-blue text-xs hover:text-white flex items-center gap-1 ml-2">
+                      <FontAwesomeIcon icon={faCopy} /> Copy
+                    </button>
+                  </div>
+                )}
+                {data.serial && (
+                  <div className="flex gap-2 text-xs">
+                    <span className="text-white/40 w-16 shrink-0">Serial:</span>
+                    <span className="text-white/70 font-mono break-all">{data.serial}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Mua thẻ: mảng cards */}
+          {isPurchase && cards.length > 0 && (
+            <div>
+              <p className="text-xs text-white/40 uppercase tracking-wider font-bold mb-3">Mã Thẻ ({cards.length})</p>
               <div className="space-y-2">
                 {cards.map((c, i) => (
                   <div key={i} className="bg-dark-700/60 border border-white/10 rounded-xl p-3">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-white/40 text-xs">Thẻ {i + 1}</span>
-                      <button onClick={() => navigator.clipboard.writeText(c.code || c.serial || '')} className="text-neon-blue text-xs hover:text-white">Copy</button>
+                      <button onClick={() => navigator.clipboard.writeText(c.pin || c.code || '')} className="text-neon-blue text-xs hover:text-white flex items-center gap-1">
+                        <FontAwesomeIcon icon={faCopy} /> Copy
+                      </button>
                     </div>
                     <div className="space-y-1">
-                      {(c.code || c.serial) && (
+                      {(c.pin || c.code) && (
                         <div className="flex gap-2 text-xs">
                           <span className="text-white/40 w-16 shrink-0">Mã thẻ:</span>
-                          <span className="text-yellow-400 font-mono font-bold break-all">{c.code || c.serial}</span>
+                          <span className="text-yellow-400 font-mono font-bold break-all">{c.pin || c.code}</span>
                         </div>
                       )}
-                      {(c.seri || c.serial_number) && (
+                      {c.serial && (
                         <div className="flex gap-2 text-xs">
                           <span className="text-white/40 w-16 shrink-0">Serial:</span>
-                          <span className="text-white/70 font-mono break-all">{c.seri || c.serial_number}</span>
+                          <span className="text-white/70 font-mono break-all">{c.serial}</span>
                         </div>
                       )}
                       {c.expireDate && (
@@ -877,10 +910,10 @@ export default function AdminCardConfig() {
                 ))}
               </div>
             </div>
-          ) : (
-            <div className="text-center text-white/30 text-sm py-4">
-              {isPurchase ? 'Chưa có mã thẻ' : 'Không có thông tin thẻ'}
-            </div>
+          )}
+
+          {isPurchase && cards.length === 0 && (
+            <div className="text-center text-white/30 text-sm py-4">Chưa có mã thẻ</div>
           )}
         </div>
       </div>
