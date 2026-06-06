@@ -115,7 +115,7 @@ export default function AccountCard({ account }) {
 
   return (
     <motion.div whileHover={{ y: -4 }} className="gaming-card group h-full flex flex-col overflow-hidden">
-      <div className="relative h-44 overflow-hidden">
+      <div className="relative h-24 sm:h-44 overflow-hidden">
         <img
           src={account.thumbnailUrl || account.images?.[0]?.url || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=250&fit=crop'}
           alt={account.title}
@@ -173,14 +173,14 @@ export default function AccountCard({ account }) {
               </div>
             )}
 
-            <div className="font-gaming font-bold text-neon-pink text-sm">
+            <div className="font-gaming font-bold text-neon-pink text-xs sm:text-sm">
               {formatCurrency(account.price)}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="p-4 flex flex-col flex-1 gap-2">
+      <div className="p-2.5 sm:p-4 flex flex-col flex-1 gap-1.5 sm:gap-2">
         <div className="flex items-center justify-between gap-2">
           <span className="text-[10px] font-mono text-white/30 bg-white/5 px-1.5 py-0.5 rounded">
             #{account.code}
@@ -199,18 +199,18 @@ export default function AccountCard({ account }) {
           </span>
         </div>
 
-        <h3 className="font-display font-semibold text-white text-sm leading-snug line-clamp-2 group-hover:text-neon-pink transition-colors">
+        <h3 className="font-display font-semibold text-white text-xs sm:text-sm leading-snug line-clamp-2 group-hover:text-neon-pink transition-colors">
           {account.title}
         </h3>
 
         {category && (
-          <div className="text-xs text-purple-300 bg-neon-purple/10 border border-neon-purple/20 rounded-lg px-2 py-1 w-fit flex items-center gap-1">
+          <div className="hidden sm:flex text-xs text-purple-300 bg-neon-purple/10 border border-neon-purple/20 rounded-lg px-2 py-1 w-fit items-center gap-1">
             <CategoryIcon value={category.icon} />
             {category.name}
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2 mt-1">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
           {[
             { icon: <FontAwesomeIcon icon={faUsers} />, val: account.champions, label: 'Tướng' },
             { icon: <FontAwesomeIcon icon={faVest} />, val: account.skins, label: 'Skin' },
@@ -224,7 +224,7 @@ export default function AccountCard({ account }) {
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {account.gameBindEmail && (
             <span className="px-2 py-1 rounded-lg bg-neon-green/10 border border-neon-green/25 text-neon-green text-[11px] flex items-center gap-1">
               <FontAwesomeIcon icon={faEnvelope} />
@@ -245,7 +245,7 @@ export default function AccountCard({ account }) {
           </span>
         </div>
 
-        <div className="text-xs text-white/40 flex items-center gap-1">
+        <div className="hidden sm:flex text-xs text-white/40 items-center gap-1">
           <FontAwesomeIcon icon={faServer} />
           {account.server}
 
@@ -259,7 +259,7 @@ export default function AccountCard({ account }) {
         <div className="mt-auto pt-1">
           <Link
             to={`/shop/acc/${account.id}`}
-            className={`block w-full text-center py-2.5 rounded-lg text-sm font-display font-bold uppercase tracking-wide transition-all duration-300 ${isAvailable
+            className={`block w-full text-center rounded-lg font-display font-bold uppercase tracking-wide transition-all duration-300 ${isAvailable
                 ? 'bg-gradient-to-r from-neon-pink/60 to-neon-purple/60 hover:from-neon-pink hover:to-neon-purple text-white shadow-[0_0_10px_rgba(255,45,115,0.25)] hover:shadow-[0_0_25px_rgba(255,45,115,0.6)]'
                 : 'bg-white/5 text-white/30 cursor-not-allowed'
               }`}

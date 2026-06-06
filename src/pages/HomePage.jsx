@@ -420,60 +420,66 @@ function CategoryCard({ category, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
-      whileHover={{ y: -8, scale: 1.01 }}
+      whileHover={{ y: -6 }}
     >
-      <Link to={`/shop/${category.slug}`} className="gaming-card block overflow-hidden group h-full">
-        <div className="relative h-44 bg-dark-800">
+      <Link
+        to={`/shop/${category.slug}`}
+        className="gaming-card block overflow-hidden group h-full"
+      >
+        <div className="relative h-32 sm:h-44 bg-dark-900">
           {category.imageUrl ? (
             <img
               src={category.imageUrl}
               alt={category.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-contain p-2 bg-dark-900 group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-neon-pink text-5xl">
+            <div className="w-full h-full flex items-center justify-center text-neon-pink text-4xl">
               <CategoryIcon value={category.icon} />
             </div>
           )}
 
           <div className="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-transparent to-transparent" />
 
-          <div className="absolute top-3 right-3">
-            <div className="px-2 py-1 rounded-lg bg-black/60 border border-white/10 text-white/70 text-xs flex items-center gap-1.5">
-              <FontAwesomeIcon icon={faLayerGroup} />
+          <div className="absolute top-2 right-2">
+            <div className="px-1.5 py-0.5 rounded bg-black/70 border border-white/10 text-[10px] text-white/70">
               {category.availableCount ?? category._count?.accounts ?? 0} acc
             </div>
           </div>
 
-          <div className="absolute bottom-3 left-3 right-3">
-            <h3 className="font-gaming text-white font-bold text-lg flex items-center gap-2">
-              <CategoryIcon value={category.icon} className="text-neon-pink" />
+          <div className="absolute bottom-2 left-2 right-2">
+            <h3 className="font-gaming text-white font-bold text-xs sm:text-lg flex items-center gap-1.5 line-clamp-2">
+              <CategoryIcon
+                value={category.icon}
+                className="text-neon-pink shrink-0"
+              />
               {category.name}
             </h3>
           </div>
         </div>
 
-        <div className="p-4">
-          <p className="text-white/45 text-sm line-clamp-2 min-h-[40px]">
-            {category.description || 'Xem danh sách tài khoản trong danh mục này'}
+        <div className="p-2.5 sm:p-4">
+          <p className="text-white/45 text-[10px] sm:text-sm line-clamp-2 min-h-[32px]">
+            {category.description ||
+              'Xem danh sách tài khoản trong danh mục này'}
           </p>
 
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-            <div className="text-white/30 text-xs">
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+            <div className="text-[10px] sm:text-xs text-white/30">
               {category.minPrice ? (
                 <>
-                  Giá từ{' '}
+                  Từ{' '}
                   <span className="text-neon-pink font-bold">
                     {formatCurrency(category.minPrice)}
                   </span>
                 </>
               ) : (
-                'Xem chi tiết'
+                'Chi tiết'
               )}
             </div>
 
-            <span className="text-neon-pink text-sm font-bold">
-              Xem <FontAwesomeIcon icon={faArrowRight} className="ml-1" />
+            <span className="text-neon-pink text-[11px] sm:text-sm font-bold whitespace-nowrap">
+              Xem →
             </span>
           </div>
         </div>
@@ -490,7 +496,17 @@ function MysteryBoxCard({ box, index }) {
     LEGENDARY: '#f59e0b',
     MYTHIC: '#ec4899',
   }
-  const topReward = box.rewards?.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability))?.[0]
+
+  const rewards = [...(box.rewards || [])].sort(
+    (a, b) => parseFloat(b.probability) - parseFloat(a.probability)
+  )
+
+  const rarityText =
+    box.rarity === 'COMMON' ? 'Thường' :
+    box.rarity === 'RARE' ? 'Hiếm' :
+    box.rarity === 'EPIC' ? 'Sử thi' :
+    box.rarity === 'LEGENDARY' ? 'Huyền thoại' :
+    box.rarity === 'MYTHIC' ? 'Thần thoại' : ''
 
   return (
     <motion.div
@@ -498,11 +514,18 @@ function MysteryBoxCard({ box, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.08 }}
-      whileHover={{ y: -6, scale: 1.01 }}
+      whileHover={{ y: -4, scale: 1.01 }}
+      className="h-full"
     >
-      <Link to={`/mystery-box/${box.slug}`} className="gaming-card block overflow-hidden group h-full border border-purple-500/20 hover:border-purple-500/40 transition-colors">
-        {/* Image */}
-        <div className="relative h-44 bg-gradient-to-br from-dark-800 to-dark-900 overflow-hidden">
+      <Link
+        to={`/mystery-box/${box.slug}`}
+        className="
+          gaming-card block h-full overflow-hidden group
+          border border-purple-500/20 hover:border-purple-500/40
+          transition-colors
+        "
+      >
+        <div className="relative h-32 sm:h-44 bg-gradient-to-br from-dark-800 to-dark-900 overflow-hidden">
           {box.imageUrl ? (
             <img
               src={box.imageUrl}
@@ -511,87 +534,114 @@ function MysteryBoxCard({ box, index }) {
               onError={e => { e.target.style.display = 'none' }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl text-purple-400/40">
+            <div className="w-full h-full flex items-center justify-center text-5xl sm:text-6xl text-purple-400/40">
               <FontAwesomeIcon icon={faBoxOpen} />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-pink-600/5 group-hover:from-purple-600/15 group-hover:to-pink-600/15 transition-all duration-500" />
 
-          {/* Open count badge */}
-          <div className="absolute top-3 right-3">
-            <div className="px-2 py-1 rounded-lg bg-black/70 border border-purple-500/30 text-purple-300 text-xs flex items-center gap-1.5 font-mono">
-              <FontAwesomeIcon icon={faBoxOpen} className="text-[10px]" />
-              {(box.openCount || 0).toLocaleString()} lần mở
+          <div className="absolute inset-0 bg-gradient-to-t from-dark-950 via-dark-900/40 to-transparent" />
+
+          <div className="absolute top-2 right-2">
+            <div className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg bg-black/70 border border-purple-500/30 text-purple-300 text-[10px] sm:text-xs flex items-center gap-1 font-mono">
+              <FontAwesomeIcon icon={faBoxOpen} className="text-[9px]" />
+              <span className="whitespace-nowrap">
+                {(box.openCount || 0).toLocaleString()}
+              </span>
             </div>
           </div>
 
-          {/* Rank badge */}
           {index === 0 && (
-            <div className="absolute top-3 left-3">
-              <div className="px-2 py-1 rounded-lg bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 text-xs flex items-center gap-1 font-bold">
+            <div className="absolute top-2 left-2">
+              <div className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 text-[10px] sm:text-xs flex items-center gap-1 font-bold">
                 <FontAwesomeIcon icon={faFire} />
                 Hot
               </div>
             </div>
           )}
 
-          <div className="absolute bottom-3 left-3 right-3">
-            <h3 className="font-gaming text-white font-bold text-base flex items-center gap-2">
-              <FontAwesomeIcon icon={faBoxOpen} className="text-purple-400 text-sm" />
-              {box.name}
+          <div className="absolute bottom-2 left-2 right-2">
+            <h3 className="font-gaming text-white font-bold text-xs sm:text-base leading-4 sm:leading-5 flex items-center gap-1.5 line-clamp-2">
+              <FontAwesomeIcon
+                icon={faBoxOpen}
+                className="text-purple-400 text-xs sm:text-sm shrink-0"
+              />
+              <span className="line-clamp-2">{box.name}</span>
             </h3>
           </div>
         </div>
 
-        <div className="p-4">
-          <p className="text-white/45 text-xs mb-3 line-clamp-2 min-h-[32px]">
+        <div className="p-2.5 sm:p-4 flex flex-col">
+          <div className="min-h-[34px] sm:min-h-[38px] mb-2 overflow-hidden">
             {box.description ? (
-  <div
-    className="text-white/45 text-xs mb-3 line-clamp-2 min-h-[32px] [&_*]:text-inherit [&_*]:text-xs [&_p]:m-0 [&_strong]:font-bold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
-    dangerouslySetInnerHTML={{ __html: box.description }}
-  />
-) : (
-  <p className="text-white/45 text-xs mb-3 line-clamp-2 min-h-[32px]">
-    Mở hộp để nhận phần thưởng bí ẩn siêu giá trị!
-  </p>
-)}
-          </p>
+              <div
+                className="
+                  text-white/45 text-[10px] sm:text-xs leading-4
+                  line-clamp-2
+                  [&_*]:text-inherit [&_*]:text-[10px] sm:[&_*]:text-xs
+                  [&_p]:m-0 [&_strong]:font-bold [&_em]:italic
+                  [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4
+                "
+                dangerouslySetInnerHTML={{ __html: box.description }}
+              />
+            ) : (
+              <p className="text-white/45 text-[10px] sm:text-xs leading-4 line-clamp-2">
+                Mở hộp để nhận phần thưởng bí ẩn siêu giá trị!
+              </p>
+            )}
+          </div>
 
-          {/* Reward previews or rarity badge */}
-          {box.rewards?.length > 0 ? (
-            <div className="flex flex-wrap gap-1 mb-3">
-              {box.rewards.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability)).slice(0, 3).map(r => (
+          {rewards.length > 0 ? (
+            <div className="flex flex-wrap gap-1 mb-2 min-h-[22px] overflow-hidden">
+              {rewards.slice(0, 2).map(r => (
                 <span
                   key={r.id}
-                  className="text-[10px] px-1.5 py-0.5 rounded"
-                  style={{ color: rarityColors[r.rarity] || '#9ca3af', background: `${rarityColors[r.rarity] || '#9ca3af'}18`, border: `1px solid ${rarityColors[r.rarity] || '#9ca3af'}30` }}
+                  className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded max-w-full truncate"
+                  style={{
+                    color: rarityColors[r.rarity] || '#9ca3af',
+                    background: `${rarityColors[r.rarity] || '#9ca3af'}18`,
+                    border: `1px solid ${rarityColors[r.rarity] || '#9ca3af'}30`,
+                  }}
                 >
                   {r.name}
                 </span>
               ))}
             </div>
           ) : box.rarity ? (
-            <div className="flex flex-wrap gap-1 mb-3">
+            <div className="flex flex-wrap gap-1 mb-2 min-h-[22px]">
               <span
-                className="text-[10px] px-1.5 py-0.5 rounded"
-                style={{ color: rarityColors[box.rarity] || '#9ca3af', background: `${rarityColors[box.rarity] || '#9ca3af'}18`, border: `1px solid ${rarityColors[box.rarity] || '#9ca3af'}30` }}
+                className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded"
+                style={{
+                  color: rarityColors[box.rarity] || '#9ca3af',
+                  background: `${rarityColors[box.rarity] || '#9ca3af'}18`,
+                  border: `1px solid ${rarityColors[box.rarity] || '#9ca3af'}30`,
+                }}
               >
-                {box.rarity === 'COMMON' ? 'Thường' : box.rarity === 'RARE' ? 'Hiếm' : box.rarity === 'EPIC' ? 'Sử thi' : box.rarity === 'LEGENDARY' ? 'Huyền thoại' : 'Thần thoại'}
+                {rarityText}
               </span>
             </div>
-          ) : null}
+          ) : (
+            <div className="mb-2 min-h-[22px]" />
+          )}
 
-          <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
-            <div>
-              <div className="text-white/30 text-xs">Giá mở hộp</div>
-              <div className="font-gaming text-lg font-bold text-neon-pink">
+          <div className="mt-auto pt-2.5 sm:pt-3 border-t border-white/5">
+            <div className="text-white/30 text-[10px] sm:text-xs mb-1">
+              Giá mở hộp
+            </div>
+
+            <div className="flex items-end justify-between gap-1.5">
+              <div className="font-gaming text-[13px] sm:text-lg leading-none font-bold text-neon-pink truncate">
                 {formatCurrency(box.price)}
               </div>
+
+              <span className="inline-flex shrink-0 items-center justify-end gap-1 text-purple-400 text-[11px] sm:text-sm font-bold group-hover:text-purple-300 transition-colors whitespace-nowrap">
+                Mở
+                <span className="hidden sm:inline">Ngay</span>
+                <FontAwesomeIcon
+                  icon={faArrowRight}
+                  className="text-[10px] sm:text-xs"
+                />
+              </span>
             </div>
-            <span className="text-purple-400 text-sm font-bold group-hover:text-purple-300 transition-colors">
-              Mở Ngay <FontAwesomeIcon icon={faArrowRight} className="ml-1" />
-            </span>
           </div>
         </div>
       </Link>
@@ -1109,36 +1159,46 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="py-20">
-        <div className="page-container">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={stagger}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {features.map((f, i) => (
-              <motion.div
-                key={i}
-                variants={fadeInUp}
-                whileHover={{ y: -6 }}
-                className="gaming-card p-6 text-center group cursor-default"
-              >
-                <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300 text-neon-pink">
-                  <FontAwesomeIcon icon={f.icon} />
-                </div>
-                <h3 className="font-display font-bold text-white mb-2 text-lg">
-                  {f.title}
-                </h3>
-                <p className="text-white/50 text-sm leading-relaxed">
-                  {f.desc}
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+<section className="py-12 md:py-20">
+  <div className="page-container">
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      variants={stagger}
+      className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6"
+    >
+      {features.map((f, i) => (
+        <motion.div
+          key={i}
+          variants={fadeInUp}
+          whileHover={{ y: -6 }}
+          className="
+            gaming-card
+            p-3 md:p-6
+            text-center
+            group
+            cursor-default
+            min-h-[130px] md:min-h-[220px]
+            flex flex-col justify-center
+          "
+        >
+          <div className="text-3xl md:text-5xl mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-300 text-neon-pink">
+            <FontAwesomeIcon icon={f.icon} />
+          </div>
+
+          <h3 className="font-display font-bold text-white mb-1 md:mb-2 text-xs md:text-lg leading-tight">
+            {f.title}
+          </h3>
+
+          <p className="text-white/50 text-[10px] md:text-sm leading-relaxed">
+            {f.desc}
+          </p>
+        </motion.div>
+      ))}
+    </motion.div>
+  </div>
+</section>
 
       {/* Account Categories */}
       {categories.length > 0 && (
@@ -1154,7 +1214,7 @@ export default function HomePage() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={stagger}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
             >
               {categories.slice(0, 8).map((cat, i) => (
                 <CategoryCard key={cat.id} category={cat} index={i} />
@@ -1192,7 +1252,7 @@ export default function HomePage() {
                         whileInView="visible"
                         viewport={{ once: true }}
                         variants={stagger}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+                        className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5"
                       >
                         {topMysteryBoxes.map((box, i) => (
                           <MysteryBoxCard key={box.id} box={box} index={i} />
@@ -1478,7 +1538,7 @@ export default function HomePage() {
               subtitle="Những may mắn nhất từ vòng quay"
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
               {recentWinners.slice(0, 5).map((w, i) => (
                 <motion.div
                   key={w.id}
@@ -1676,79 +1736,91 @@ export default function HomePage() {
 
       {/* Latest News */}
       {latestNews.length > 0 && (
-        <section className="py-10 pb-20">
-          <div className="page-container">
-            <SectionHeader
-              title="Tin Tức Mới Nhất"
-              subtitle="Cập nhật khuyến mãi, sự kiện và thông báo mới nhất"
-            />
+  <section className="py-10 pb-20">
+    <div className="page-container">
+      <SectionHeader
+        title="Tin Tức Mới Nhất"
+        subtitle="Cập nhật khuyến mãi, sự kiện và thông báo mới nhất"
+      />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-              {latestNews.slice(0, 4).map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.06 }}
-                  className="gaming-card overflow-hidden group"
-                >
-                  <Link to={`/news/${item.slug}`} className="block">
-                    <div className="relative h-40 overflow-hidden">
-                      <img
-                        src={
-                          item.thumbnailUrl ||
-                          'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=500&h=300&fit=crop'
-                        }
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+      <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-5">
+        {latestNews.slice(0, 4).map((item, i) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.06 }}
+            className="gaming-card overflow-hidden group h-full"
+          >
+            <Link to={`/news/${item.slug}`} className="block h-full">
+              <div className="relative h-28 sm:h-40 overflow-hidden bg-dark-900">
+                <img
+                  src={
+                    item.thumbnailUrl ||
+                    'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=500&h=300&fit=crop'
+                  }
+                  alt={item.title}
+                  className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+                />
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-dark-900/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark-900/75 via-transparent to-transparent" />
 
-                      <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-neon-pink/90 text-white text-[10px] font-bold uppercase flex items-center gap-1">
-                        <FontAwesomeIcon icon={faNewspaper} />
-                        Tin tức
-                      </div>
-                    </div>
+                <div className="absolute top-2 left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md bg-neon-pink/90 text-white text-[9px] sm:text-[10px] font-bold uppercase flex items-center gap-1">
+                  <FontAwesomeIcon icon={faNewspaper} />
+                  <span className="hidden sm:inline">Tin tức</span>
+                </div>
+              </div>
 
-                    <div className="p-4">
-                      <h3 className="font-display font-bold text-white text-sm line-clamp-2 group-hover:text-neon-pink transition-colors mb-2">
-                        {item.title}
-                      </h3>
+              <div className="p-2.5 sm:p-4">
+                <h3 className="font-display font-bold text-white text-xs sm:text-sm leading-4 sm:leading-5 h-8 sm:h-10 line-clamp-2 group-hover:text-neon-pink transition-colors">
+                  {item.title}
+                </h3>
 
-                      {item.summary && (
-                        <p className="text-white/45 text-xs leading-relaxed line-clamp-2 mb-3">
-                          {item.summary}
-                        </p>
-                      )}
+                {item.summary && (
+  <p
+    className="
+      text-white/45
+      text-[10px] sm:text-xs
+      leading-4 sm:leading-relaxed
+      line-clamp-2
+      mt-1.5 sm:mt-2
+      mb-2 sm:mb-3
+      h-8 sm:h-auto
+    "
+  >
+    {item.summary}
+  </p>
+)}
 
-                      <div className="flex items-center justify-between text-white/30 text-xs">
-                        <span className="flex items-center gap-1">
-                          <FontAwesomeIcon icon={faCalendar} />
-                          {new Date(item.publishedAt || item.createdAt).toLocaleDateString('vi-VN')}
-                        </span>
+                <div className="flex items-center justify-between gap-1 mt-2 text-white/30 text-[10px] sm:text-xs">
+                  <span className="flex items-center gap-1 min-w-0">
+                    <FontAwesomeIcon icon={faCalendar} className="shrink-0" />
+                    <span className="truncate">
+                      {new Date(item.publishedAt || item.createdAt).toLocaleDateString('vi-VN')}
+                    </span>
+                  </span>
 
-                        <span className="flex items-center gap-1">
-                          <FontAwesomeIcon icon={faEye} />
-                          {item.viewCount || 0}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+                  <span className="flex items-center gap-1 shrink-0">
+                    <FontAwesomeIcon icon={faEye} />
+                    {item.viewCount || 0}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
 
-            <div className="text-center mt-10">
-              <Link to="/news" className="btn-neon px-10 py-3.5 text-sm">
-                Xem Tất Cả Tin Tức
-                <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
+      <div className="text-center mt-8 sm:mt-10">
+        <Link to="/news" className="btn-neon px-7 sm:px-10 py-2.5 sm:py-3 text-sm inline-flex items-center gap-2">
+          Xem tất cả tin tức
+          <FontAwesomeIcon icon={faArrowRight} />
+        </Link>
+      </div>
+    </div>
+  </section>
+)}
     </div>
   )
 }

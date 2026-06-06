@@ -122,6 +122,7 @@ export default function ShopPage() {
   const [loading, setLoading] = useState(true)
   const [params, setParams] = useState(defaultParams)
   const [searchInput, setSearchInput] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
 
   // Local state cho các ô input số + skinName để tránh call API mỗi keystroke
   const [localInputs, setLocalInputs] = useState({
@@ -286,8 +287,24 @@ export default function ShopPage() {
 
         {/* Main layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 items-start">
+          {/* Mobile filter toggle */}
+          <div className="lg:hidden flex items-center justify-between mb-2">
+            <button
+              onClick={() => setFilterOpen(!filterOpen)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all ${filterOpen ? "bg-neon-pink/20 border-neon-pink/50 text-neon-pink" : "border-white/10 text-white/60 hover:border-white/30"}`}
+            >
+              <FontAwesomeIcon icon={faFilter} />
+              Bộ lọc
+              {activeFiltersCount > 0 && <span className="w-5 h-5 rounded-full bg-neon-pink text-black text-xs font-bold flex items-center justify-center">{activeFiltersCount}</span>}
+            </button>
+            {activeFiltersCount > 0 && (
+              <button onClick={clearFilters} className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
+                <FontAwesomeIcon icon={faXmark} /> Xóa lọc
+              </button>
+            )}
+          </div>
           {/* Left sidebar */}
-          <aside className="gaming-card p-5 border-neon lg:sticky lg:top-24">
+          <aside className={`gaming-card p-5 border-neon lg:sticky lg:top-24 ${filterOpen ? "block" : "hidden"} lg:block`}>
             <div className="flex items-center justify-between mb-5">
               <div className="font-gaming text-white font-bold flex items-center gap-2">
                 <FontAwesomeIcon icon={faFilter} className="text-neon-pink" />
@@ -655,7 +672,7 @@ export default function ShopPage() {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {Array(9).fill(0).map((_, i) => (
                   <SkeletonCard key={i} />
                 ))}
@@ -681,7 +698,7 @@ export default function ShopPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"
+                  className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3"
                 >
                   {accounts.map((acc, i) => (
                     <motion.div

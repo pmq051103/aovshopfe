@@ -58,7 +58,7 @@ function CategoryCard({ category, index }) {
     >
       <Link to={`/mystery-box/${category.slug}`} className="block h-full">
         <div
-          className={`relative h-full min-h-[330px] overflow-hidden rounded-xl bg-gradient-to-b ${RARITY_BG[category.rarity]} flex flex-col`}
+          className={`relative h-full min-h-[260px] sm:min-h-[330px] overflow-hidden rounded-xl bg-gradient-to-b ${RARITY_BG[category.rarity]} flex flex-col`}
           style={{
             border: `1px solid ${borderColor}`,
             boxShadow: glowShadow,
@@ -69,7 +69,7 @@ function CategoryCard({ category, index }) {
             style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
           />
 
-          <div className="relative h-40 overflow-hidden bg-dark-800 shrink-0">
+          <div className="relative h-24 sm:h-40 overflow-hidden bg-dark-800 shrink-0">
             {category.thumbnail ? (
               <motion.img
                 src={category.thumbnail}
@@ -105,9 +105,9 @@ function CategoryCard({ category, index }) {
             </div>
           </div>
 
-          <div className="p-4 flex flex-col flex-1">
+          <div className="p-2.5 sm:p-4 flex flex-col flex-1">
             <div className="flex items-start justify-between gap-2 mb-2 min-h-[44px]">
-              <h3 className="font-gaming text-base font-bold text-white leading-tight line-clamp-2">
+              <h3 className="font-gaming text-xs sm:text-base font-bold text-white leading-tight line-clamp-2">
                 {category.name}
               </h3>
 
@@ -118,7 +118,7 @@ function CategoryCard({ category, index }) {
               />
             </div>
 
-            <div className="flex items-center gap-2 mb-3 min-h-[20px]">
+            <div className="hidden sm:flex items-center gap-2 mb-3 min-h-[20px]">
               <div className="flex items-center gap-1 text-[11px] text-white/55">
                 <FontAwesomeIcon icon={faFire} style={{ color }} />
                 <span>{category.soldCount || 0} đã bán</span>
@@ -140,7 +140,7 @@ function CategoryCard({ category, index }) {
                   </div>
 
                   <div
-                    className="font-gaming text-lg font-black whitespace-nowrap"
+                    className="font-gaming text-sm sm:text-lg font-black whitespace-nowrap"
                     style={{ color, textShadow: `0 0 14px ${color}50` }}
                   >
                     {formatCurrency(category.price)}
@@ -266,7 +266,7 @@ export default function MysteryBoxCategoryPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-stretch">
               {categories.map((cat, i) => (
                 <CategoryCard key={cat.id} category={cat} index={i} />
               ))}

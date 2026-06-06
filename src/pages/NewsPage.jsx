@@ -19,7 +19,7 @@ export default function NewsPage() {
   const fetchNews = async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ page, limit: 9 })
+      const params = new URLSearchParams({ page, limit: 6 })
       if (activeTag) params.append('tag', activeTag)
       const { data } = await api.get(`/news?${params}`)
       setNews(data.data || [])
@@ -30,7 +30,7 @@ export default function NewsPage() {
   const allTags = [...new Set(news.flatMap(n => (n.tags || '').split(',').map(t => t.trim()).filter(Boolean)))]
 
   return (
-    <div className="min-h-screen pt-28 pb-10 px-4 max-w-6xl mx-auto">
+    <div className="min-h-screen pt-24 md:pt-28 pb-10 px-3 md:px-4 max-w-6xl mx-auto">
       {/* Header */}
       <motion.div initial="hidden" animate="visible" variants={fadeUp}
         className="text-center mb-10">
@@ -56,7 +56,7 @@ export default function NewsPage() {
 
       {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-dark-800 rounded-xl h-64 animate-pulse border border-white/5" />
           ))}
@@ -68,13 +68,13 @@ export default function NewsPage() {
         </div>
       ) : (
         <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
           {news.map(n => (
             <motion.div key={n.id} variants={fadeUp}>
               <Link to={`/news/${n.slug}`}
                 className="block bg-dark-800 rounded-xl border border-white/5 hover:border-neon-pink/20 overflow-hidden transition-all hover:shadow-lg hover:shadow-neon-pink/5 group">
                 {/* Thumbnail */}
-                <div className="h-44 overflow-hidden bg-dark-900">
+                <div className="h-28 md:h-44 overflow-hidden bg-dark-900">
                   {n.thumbnailUrl
                     ? <img src={n.thumbnailUrl} alt={n.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     : <div className="w-full h-full flex items-center justify-center text-white/10">
@@ -83,7 +83,7 @@ export default function NewsPage() {
                   }
                 </div>
                 {/* Content */}
-                <div className="p-4">
+                <div className="p-2.5 md:p-4">
                   {/* Tags */}
                   {n.tags && (
                     <div className="flex flex-wrap gap-1 mb-2">
@@ -93,15 +93,16 @@ export default function NewsPage() {
                     </div>
                   )}
                   <h3
-                    className="
-                      text-white font-semibold text-sm
-                      h-10 leading-5
-                      overflow-hidden
-                      line-clamp-2
-                      group-hover:text-neon-pink
-                      transition-colors
-                    "
-                  >
+  className="
+    text-white font-semibold text-xs md:text-sm
+    h-8 md:h-10
+    leading-4 md:leading-5
+    overflow-hidden
+    line-clamp-2
+    group-hover:text-neon-pink
+    transition-colors
+  "
+>
                     {n.title}
                   </h3>
                   {n.summary && (

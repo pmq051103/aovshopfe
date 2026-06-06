@@ -312,6 +312,7 @@ export default function Navbar() {
                     onClick={() => {
                       setNotifOpen(!notifOpen)
                       setUserMenuOpen(false)
+                      setMenuOpen(false)
                       if (!notifOpen) fetchNotifications()
                     }}
                     className="relative p-2 rounded-lg hover:bg-white/5 transition-colors"
@@ -380,6 +381,7 @@ fixed left-4 right-4 top-16
                     onClick={() => {
                       setUserMenuOpen(!userMenuOpen)
                       setNotifOpen(false)
+                      setMenuOpen(false)
                     }}
                     className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
                   >
@@ -471,7 +473,16 @@ fixed left-4 right-4 top-16
             )}
 
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => {
+                const next = !menuOpen
+                setMenuOpen(next)
+                if (next) {
+                  setUserMenuOpen(false)
+                  setNotifOpen(false)
+                  setMiniGameMenuOpen(false)
+                  setServiceMenuOpen(false)
+                }
+              }}
               className="lg:hidden p-2 rounded-lg hover:bg-white/5 transition-colors"
             >
               <div className="w-5 flex flex-col gap-1">

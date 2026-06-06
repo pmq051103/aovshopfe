@@ -278,10 +278,11 @@ Facebook: ${getFacebookLabel(snap.gameBindFacebook)}`
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="relative gaming-card border border-white/10 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          className="relative gaming-card border border-white/10 w-full max-w-lg overflow-y-auto"
+          style={{ maxHeight: 'calc(100svh - 120px)' }}
         >
           {/* Header */}
-          <div className="sticky top-0 bg-dark-800/95 backdrop-blur border-b border-white/5 p-5 flex items-start justify-between z-10">
+          <div className="sticky top-0 bg-dark-800/95 backdrop-blur border-b border-white/5 p-4 flex items-start justify-between z-10">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 {/* Nhãn nguồn */}

@@ -83,7 +83,7 @@ function CategoryCard({ category, index }) {
     >
       <Link to={`/shop/${category.slug}`} className="block h-full">
         <div
-          className={`relative h-full min-h-[360px] overflow-hidden rounded-2xl bg-gradient-to-b ${grad} group transition-all duration-300 flex flex-col`}
+          className={`relative h-full min-h-[280px] sm:min-h-[360px] overflow-hidden rounded-2xl bg-gradient-to-b ${grad} group transition-all duration-300 flex flex-col`}
           style={{
             border: `1px solid ${border}`,
             boxShadow: `0 4px 24px ${glow}`,
@@ -94,7 +94,7 @@ function CategoryCard({ category, index }) {
             style={{ background: `linear-gradient(90deg, transparent, ${border}, transparent)` }}
           />
 
-          <div className="relative h-44 shrink-0 overflow-hidden bg-dark-800">
+          <div className="relative h-28 sm:h-44 shrink-0 overflow-hidden bg-dark-800">
             {category.imageUrl ? (
               <motion.img
                 src={category.imageUrl}
@@ -136,7 +136,7 @@ function CategoryCard({ category, index }) {
             )}
           </div>
 
-          <div className="p-4 flex flex-col flex-1">
+          <div className="p-2.5 sm:p-4 flex flex-col flex-1">
             <div className="flex items-start justify-between gap-3 mb-3 min-h-[36px]">
               <div className="min-w-0 flex items-center gap-2">
                 <span
@@ -149,7 +149,7 @@ function CategoryCard({ category, index }) {
                   <FontAwesomeIcon icon={ICON_MAP[category.icon] || faGamepad} className="text-sm" />
                 </span>
 
-                <h3 className="font-gaming text-base font-bold text-white leading-tight line-clamp-1">
+                <h3 className="font-gaming text-xs sm:text-base font-bold text-white leading-tight line-clamp-1">
                   {category.name}
                 </h3>
               </div>
@@ -161,7 +161,7 @@ function CategoryCard({ category, index }) {
               />
             </div>
 
-            <p className="text-white/65 text-xs mb-4 line-clamp-2 leading-relaxed min-h-[40px]">
+            <p className="hidden sm:block text-white/65 text-xs mb-4 line-clamp-2 leading-relaxed min-h-[40px]">
               {category.description || 'Xem danh sách tài khoản trong danh mục này'}
             </p>
 
@@ -175,7 +175,7 @@ function CategoryCard({ category, index }) {
                   {minPrice ? (
                     <div className="min-h-[44px]">
                       <div
-                        className="font-gaming font-black text-[17px] leading-none whitespace-nowrap"
+                        className="font-gaming font-black text-[13px] sm:text-[17px] leading-none whitespace-nowrap"
                         style={{ color: textColor }}
                       >
                         {formatCurrency(minPrice)}
@@ -199,7 +199,7 @@ function CategoryCard({ category, index }) {
                 </div>
 
                 <motion.div
-                  className="shrink-0 px-3 py-2 rounded-lg text-[11px] font-bold flex items-center gap-1.5 whitespace-nowrap"
+                  className="shrink-0 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-bold flex items-center gap-1 whitespace-nowrap"
                   style={{
                     background: hasAccounts ? `${border}25` : 'rgba(255,255,255,0.06)',
                     border: `1px solid ${hasAccounts ? border : 'rgba(255,255,255,0.12)'}`,
@@ -300,7 +300,7 @@ export default function ShopCategoryPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-stretch">
               {categories.map((cat, i) => (
                 <CategoryCard key={cat.id} category={cat} index={i} />
               ))}

@@ -60,7 +60,7 @@ function MysteryAccountCard({ account, index, onViewDetail }) {
           style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
         />
 
-        <div className="relative h-40 overflow-hidden bg-dark-800">
+        <div className="relative h-24 sm:h-40 overflow-hidden bg-dark-800">
           {account.category?.thumbnail ? (
             <motion.img
               src={account.category.thumbnail}
@@ -119,10 +119,10 @@ function MysteryAccountCard({ account, index, onViewDetail }) {
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-2.5 sm:p-4">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <h3 className="font-gaming text-sm font-bold text-white leading-tight line-clamp-1">
+              <h3 className="font-gaming text-xs sm:text-sm font-bold text-white leading-tight line-clamp-1">
                 Acc Túi Mù {account.code}
               </h3>
               <p className="text-white/35 text-xs mt-1">
@@ -137,7 +137,7 @@ function MysteryAccountCard({ account, index, onViewDetail }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="hidden sm:grid grid-cols-2 gap-2 mb-4">
             <div className="rounded-xl p-3 bg-dark-800/80 border border-white/5">
               <div className="text-white/30 text-[10px] uppercase tracking-wider mb-1">
                 Độ hiếm
@@ -157,7 +157,7 @@ function MysteryAccountCard({ account, index, onViewDetail }) {
             </div>
           </div>
 
-          <div className="rounded-xl p-3 mb-4" style={{ background: `${color}10`, border: `1px solid ${color}25` }}>
+          <div className="hidden sm:block rounded-xl p-3 mb-4" style={{ background: `${color}10`, border: `1px solid ${color}25` }}>
             <div className="flex items-center gap-2 text-white/55 text-xs leading-relaxed">
               <FontAwesomeIcon icon={faCircleInfo} style={{ color }} />
               Acc ngẫu nhiên trong túi. Thông tin đăng nhập chỉ hiện sau khi mở thành công.
@@ -168,7 +168,7 @@ function MysteryAccountCard({ account, index, onViewDetail }) {
             <div>
               <div className="text-white/30 text-[10px] uppercase tracking-wider">Giá mở</div>
               <div
-                className="font-gaming text-base font-black whitespace-nowrap"
+                className="font-gaming text-xs sm:text-base font-black whitespace-nowrap"
                 style={{ color, textShadow: `0 0 18px ${color}55` }}
               >
                 {formatCurrency(account.category?.price)}
@@ -757,7 +757,7 @@ export default function MysteryBoxAccountsPage() {
             <div className="text-white/40 font-display">Không có acc nào khớp</div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {accounts.map((acc, i) => (
               <MysteryAccountCard
                 key={acc.id}
