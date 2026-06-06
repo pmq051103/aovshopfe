@@ -5,6 +5,7 @@ import ParticleBackground from '../common/ParticleBackground'
 import MobileNav from '../mobile/MobileNav'
 import SupportBubble from '../common/SupportBubble'
 import AIChatBot from '../common/AIChatBot'
+import AnnouncementPopup from '../common/AnnouncementPopup'
 import { useSiteSettings } from '../../context/SiteSettingsContext'
 
 export default function MainLayout() {
@@ -23,6 +24,7 @@ export default function MainLayout() {
       <MobileNav />
       <SupportBubble />
       {settings.show_chatbox !== 'false' && <AIChatBot />}
+      <AnnouncementPopup />
     </div>
   )
 }

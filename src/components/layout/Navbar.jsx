@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
 import { logoutUser } from '../../store/slices/authSlice'
@@ -39,7 +39,13 @@ export default function Navbar() {
   const { user } = useSelector(s => s.auth)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const { settings: siteSettings } = useSiteSettings()
+
+  // Đóng mobile menu khi chuyển trang (kể cả khi bấm vào route đang active)
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
 
   const userMenuRef = useRef(null)
   const miniGameMenuRef = useRef(null)
@@ -513,7 +519,7 @@ fixed left-4 right-4 top-16
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-dark-800/98 backdrop-blur-xl border-t border-white/10"
+            className="lg:hidden bg-dark-800/98 backdrop-blur-xl border-t border-white/10 overflow-hidden"
           >
             <div className="page-container py-4 space-y-1">
               {renderMobileLinks(mainLinks)}

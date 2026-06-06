@@ -58,7 +58,6 @@ import NotFoundPage from './pages/NotFoundPage'
 import { SiteSettingsProvider, useSiteSettings } from './context/SiteSettingsContext'
 import { useLocation } from 'react-router-dom'
 
-import AnnouncementPopup from './components/common/AnnouncementPopup'
 import ScrollToTop from './components/common/ScrollToTop'
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -145,7 +144,7 @@ export default function App() {
             <Route path="news" element={<NewsPage />} />
             <Route path="news/:slug" element={<NewsDetailPage />} />
             <Route path="deposit" element={<ProtectedRoute><DepositPage /></ProtectedRoute>} />
-            <Route path="card-shop" element={<CardShopPage />} />
+            <Route path="card-shop" element={<FeatureGuard settingKey="show_card_shop"><CardShopPage /></FeatureGuard>} />
             <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="transactions" element={<ProtectedRoute><TransactionHistoryPage /></ProtectedRoute>} />
             <Route path="tickets" element={<ProtectedRoute><TicketsPage /></ProtectedRoute>} />
@@ -180,11 +179,10 @@ export default function App() {
              <Route path="ai-knowledge" element={<AdminAIKnowledge />} />
           </Route>
 
-          <Route path="/ai-chat" element={<AIChatPage />} />
+          <Route path="/ai-chat" element={<FeatureGuard settingKey="show_chatbox"><AIChatPage /></FeatureGuard>} />
                     <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </MaintenanceGuard>
-      <AnnouncementPopup />
     </BrowserRouter>
     </SiteSettingsProvider>
   )

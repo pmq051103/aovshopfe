@@ -86,7 +86,7 @@ export default function AnnouncementPopup() {
             onClick={handleClose}
           />
 
-          {/* Wrapper căn giữa — KHÔNG dùng inset-0 làm flex container */}
+          {/* Wrapper căn giữa */}
           <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4 py-8 pointer-events-none">
             <motion.div
               key={current.id}
@@ -95,15 +95,15 @@ export default function AnnouncementPopup() {
               exit={{ opacity: 0, scale: 0.92, y: 16 }}
               transition={{ type: 'spring', stiffness: 320, damping: 28 }}
               onClick={e => e.stopPropagation()}
-              className="pointer-events-auto w-[88vw] max-w-xs bg-dark-800 border border-white/10 rounded-2xl shadow-2xl shadow-black/60 flex flex-col overflow-hidden"
+              className="pointer-events-auto w-[90vw] max-w-xs sm:max-w-md bg-dark-800 border border-white/10 rounded-2xl shadow-2xl shadow-black/60 flex flex-col overflow-hidden"
               style={{ maxHeight: 'calc(100vh - 64px)' }}
             >
               {/* Header */}
-              <div className="flex items-center gap-2.5 px-4 py-3 border-b border-white/5 bg-gradient-to-r from-neon-pink/10 to-orange-500/5 flex-shrink-0">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-neon-pink to-orange-500 flex items-center justify-center text-white text-xs flex-shrink-0">
+              <div className="flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-4 border-b border-white/5 bg-gradient-to-r from-neon-pink/10 to-orange-500/5 flex-shrink-0">
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-neon-pink to-orange-500 flex items-center justify-center text-white text-xs sm:text-sm flex-shrink-0">
                   <FontAwesomeIcon icon={faBell} />
                 </div>
-                <h2 className="flex-1 font-display font-bold text-white text-sm leading-tight line-clamp-2">
+                <h2 className="flex-1 font-display font-bold text-white text-sm sm:text-base leading-tight line-clamp-2">
                   {current.title}
                 </h2>
                 <button
@@ -114,11 +114,11 @@ export default function AnnouncementPopup() {
                 </button>
               </div>
 
-              {/* Content — scroll bên trong */}
+              {/* Content */}
               <div
-                className="px-4 py-3 text-xs text-white/80 leading-relaxed overflow-y-auto flex-1
-                  [&_h1]:text-white [&_h1]:font-bold [&_h1]:text-base [&_h1]:mb-2
-                  [&_h2]:text-white [&_h2]:font-bold [&_h2]:text-sm [&_h2]:mb-1
+                className="px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-white/80 leading-relaxed overflow-y-auto flex-1
+                  [&_h1]:text-white [&_h1]:font-bold [&_h1]:text-base sm:[&_h1]:text-lg [&_h1]:mb-2
+                  [&_h2]:text-white [&_h2]:font-bold [&_h2]:text-sm sm:[&_h2]:text-base [&_h2]:mb-1
                   [&_h3]:text-white [&_h3]:font-semibold [&_h3]:mb-1
                   [&_strong]:text-white [&_strong]:font-semibold
                   [&_em]:text-white/70
@@ -128,15 +128,15 @@ export default function AnnouncementPopup() {
                   [&_a]:text-neon-pink [&_a]:underline [&_a]:underline-offset-2
                   [&_blockquote]:border-l-2 [&_blockquote]:border-pink-500/40 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-white/50
                   [&_img]:rounded-lg [&_img]:max-w-full [&_img]:my-2
-                  [&_p]:mb-1.5 last:[&_p]:mb-0"
+                  [&_p]:mb-2 last:[&_p]:mb-0"
                 dangerouslySetInnerHTML={{ __html: current.content }}
               />
 
               {/* Footer */}
-              <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-t border-white/5 bg-dark-900/30 flex-shrink-0">
+              <div className="flex items-center justify-between gap-2 px-4 sm:px-5 py-2.5 sm:py-3 border-t border-white/5 bg-dark-900/30 flex-shrink-0">
                 <button
                   onClick={handleDismiss1h}
-                  className="flex items-center gap-1 text-[11px] text-white/35 hover:text-white/60 transition-colors"
+                  className="flex items-center gap-1.5 text-[11px] sm:text-xs text-white/35 hover:text-white/60 transition-colors"
                 >
                   <FontAwesomeIcon icon={faClock} />
                   Tắt 1 giờ
@@ -144,11 +144,11 @@ export default function AnnouncementPopup() {
 
                 <div className="flex items-center gap-2">
                   {queue.length > 0 && (
-                    <span className="text-[10px] text-white/30">+{queue.length} thông báo</span>
+                    <span className="text-[10px] sm:text-xs text-white/30">+{queue.length} thông báo</span>
                   )}
                   <button
                     onClick={handleClose}
-                    className="px-3 py-1 rounded-lg bg-gradient-to-r from-neon-pink to-orange-500 text-white text-[11px] font-semibold hover:opacity-90 transition"
+                    className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg bg-gradient-to-r from-neon-pink to-orange-500 text-white text-[11px] sm:text-xs font-semibold hover:opacity-90 transition"
                   >
                     Đã hiểu
                   </button>

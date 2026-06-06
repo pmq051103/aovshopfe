@@ -84,6 +84,8 @@ const SETTING_GROUPS = [
       { key: 'show_wheel_section', label: 'Hiện vòng quay', type: 'toggle' },
       { key: 'show_mystery_box', label: 'Hiện túi mù', type: 'toggle' },
       { key: 'show_chatbox', label: 'Hiện chatbox AI', type: 'toggle' },
+      { key: 'show_card_deposit', label: 'Nạp tiền bằng thẻ cào', type: 'toggle' },
+      { key: 'show_card_shop', label: 'Mua thẻ cào', type: 'toggle' },
       { key: 'video_section_title', label: 'Tiêu đề video', type: 'text', placeholder: 'Hướng dẫn sử dụng' },
       { key: 'video_section_url', label: 'URL video YouTube/embed', type: 'url', placeholder: 'https://www.youtube.com/embed/...' },
       { key: 'show_video_section', label: 'Hiện section video', type: 'toggle' },

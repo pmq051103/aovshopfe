@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
+import { useSiteSettings } from '../context/SiteSettingsContext'
 import { io } from 'socket.io-client'
 import QRCode from 'qrcode'
 import api from '../api/axios'
@@ -47,6 +48,7 @@ function QRCanvas({ value }) {
 
 export default function DepositPage() {
   const { user } = useSelector(s => s.auth)
+  const { settings: siteSettings } = useSiteSettings()
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [deposit, setDeposit] = useState(null)
@@ -164,7 +166,9 @@ export default function DepositPage() {
         <div className="flex gap-2 border-b border-white/10 mb-6">
           {[
             { id: 'bank', icon: faMoneyBillWave, label: 'Chuyển Khoản' },
-            { id: 'card', icon: faCreditCard,    label: 'Thẻ Cào' },
+            ...(siteSettings.show_card_deposit !== 'false'
+              ? [{ id: 'card', icon: faCreditCard, label: 'Thẻ Cào' }]
+              : []),
           ].map(tab => (
             <button
               key={tab.id}
@@ -182,7 +186,7 @@ export default function DepositPage() {
         </div>
 
         {/* Tab: Thẻ cào */}
-        {activeTab === 'card' && <CardDepositTab />}
+        {activeTab === 'card' && siteSettings.show_card_deposit !== 'false' && <CardDepositTab />}
 
         {/* Tab: Chuyển khoản */}
         {activeTab === 'bank' && (<>
