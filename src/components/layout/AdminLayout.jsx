@@ -13,7 +13,7 @@ import {
   faChartLine, faGamepad, faUsers, faClipboardList, faMoneyBillWave,
   faCoins, faFolderOpen, faImage, faDice, faBoxOpen, faGift, faTags,
   faComments, faGear, faHouse, faRightFromBracket, faNewspaper, faBell,
-  faStore, faChevronDown, faCreditCard, faTrophy, faRobot,
+  faStore, faChevronDown, faCreditCard, faTrophy, faRobot, faWandMagicSparkles,
 } from '@fortawesome/free-solid-svg-icons'
 
 const adminLinks = [
@@ -62,7 +62,10 @@ const adminLinks = [
   },
   {
     label: 'AI Chatbot', icon: faRobot,
-    children: [{ to: '/admin/ai-knowledge', label: 'Kiến thức AI', icon: faRobot }],
+    children: [
+      { to: '/admin/ai-knowledge', label: 'Kiến thức AI', icon: faRobot },
+      { to: '/admin/skin-templates', label: 'Skin Templates', icon: faWandMagicSparkles },
+    ],
   },
   { to: '/admin/settings', label: 'Cài đặt', icon: faGear },
 ]

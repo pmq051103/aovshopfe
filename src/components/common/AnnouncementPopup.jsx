@@ -115,22 +115,27 @@ export default function AnnouncementPopup() {
               </div>
 
               {/* Content */}
-              <div
-                className="px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-white/80 leading-relaxed overflow-y-auto flex-1
-                  [&_h1]:text-white [&_h1]:font-bold [&_h1]:text-base sm:[&_h1]:text-lg [&_h1]:mb-2
-                  [&_h2]:text-white [&_h2]:font-bold [&_h2]:text-sm sm:[&_h2]:text-base [&_h2]:mb-1
-                  [&_h3]:text-white [&_h3]:font-semibold [&_h3]:mb-1
-                  [&_strong]:text-white [&_strong]:font-semibold
-                  [&_em]:text-white/70
-                  [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:space-y-1
-                  [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:space-y-1
-                  [&_li]:text-white/70
-                  [&_a]:text-neon-pink [&_a]:underline [&_a]:underline-offset-2
-                  [&_blockquote]:border-l-2 [&_blockquote]:border-pink-500/40 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-white/50
-                  [&_img]:rounded-lg [&_img]:max-w-full [&_img]:my-2
-                  [&_p]:mb-2 last:[&_p]:mb-0"
-                dangerouslySetInnerHTML={{ __html: current.content }}
-              />
+              {/* Content */}
+<div
+  className="px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-white/80 leading-relaxed overflow-y-auto flex-1
+    [&_.ql-align-center]:text-center
+    [&_.ql-align-right]:text-right
+    [&_.ql-align-justify]:text-justify
+
+    [&_h1]:text-white [&_h1]:font-bold [&_h1]:text-base sm:[&_h1]:text-lg [&_h1]:mb-2
+    [&_h2]:text-white [&_h2]:font-bold [&_h2]:text-sm sm:[&_h2]:text-base [&_h2]:mb-1
+    [&_h3]:text-white [&_h3]:font-semibold [&_h3]:mb-1
+    [&_strong]:text-white [&_strong]:font-semibold
+    [&_em]:text-white/70
+    [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:space-y-1
+    [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:space-y-1
+    [&_li]:text-white/70
+    [&_a]:text-neon-pink [&_a]:underline [&_a]:underline-offset-2
+    [&_blockquote]:border-l-2 [&_blockquote]:border-pink-500/40 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-white/50
+    [&_img]:rounded-lg [&_img]:max-w-full [&_img]:my-2
+    [&_p]:mb-2 last:[&_p]:mb-0"
+  dangerouslySetInnerHTML={{ __html: current.content }}
+/>
 
               {/* Footer */}
               <div className="flex items-center justify-between gap-2 px-4 sm:px-5 py-2.5 sm:py-3 border-t border-white/5 bg-dark-900/30 flex-shrink-0">

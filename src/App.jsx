@@ -50,6 +50,7 @@ import AdminAnnouncements from './pages/admin/AdminAnnouncements'
 import AdminCardConfig from './pages/admin/AdminCardConfig'
 import AdminRanking from './pages/admin/AdminRanking'
 import AdminAIKnowledge from './pages/admin/AdminAIKnowledge'
+import AdminSkinTemplates from './pages/admin/AdminSkinTemplates'
 import AIChatPage from './pages/AIChatPage'
 
 import LoadingScreen from './components/common/LoadingScreen'
@@ -177,6 +178,7 @@ export default function App() {
             <Route path="news" element={<AdminNews />} />
             <Route path="announcements" element={<AdminAnnouncements />} />
              <Route path="ai-knowledge" element={<AdminAIKnowledge />} />
+             <Route path="skin-templates" element={<AdminSkinTemplates />} />
           </Route>
 
           <Route path="/ai-chat" element={<FeatureGuard settingKey="show_chatbox"><AIChatPage /></FeatureGuard>} />
