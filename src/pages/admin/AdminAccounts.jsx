@@ -29,11 +29,9 @@ import {
   faLink,
   faBan,
   faWandMagicSparkles,
-  faRobot,
+  faLayerGroup,
   faSpinner,
   faCheckCircle,
-  faTimesCircle,
-  faInfoCircle,
   faChevronDown,
   faChevronUp,
 } from '@fortawesome/free-solid-svg-icons'
@@ -95,13 +93,18 @@ export default function AdminAccounts() {
   const [imagePreviews, setImagePreviews] = useState([])
   const fileInputRef = useRef(null)
 
-  // AI Skin Detect state
-  const [detectLoading, setDetectLoading]     = useState(false)
-  const [detectedSkins, setDetectedSkins]     = useState([])   // kết quả từ AI
-  const [confirmedSkins, setConfirmedSkins]   = useState([])   // admin đã tick chọn
-  const [skinDetectImage, setSkinDetectImage] = useState('')   // URL ảnh dùng để detect
+  // Skin Picker state
+  const [showSkinPicker, setShowSkinPicker]       = useState(false)
+  const [skinTemplates, setSkinTemplates]         = useState([])
+  const [skinPickerSearch, setSkinPickerSearch]   = useState('')
+  const [skinPickerHero, setSkinPickerHero]       = useState('')
+  const [skinPickerLoading, setSkinPickerLoading] = useState(false)
+  const [selectedSkins, setSelectedSkins]         = useState([])
+  const [skinPickerHeroes, setSkinPickerHeroes]   = useState([])
+  // AI detect state
+  const [detectLoading, setDetectLoading]   = useState(false)
+  const [detectedSkins, setDetectedSkins]   = useState([])
   const [showDetectPanel, setShowDetectPanel] = useState(false)
-  const [confirmingAI, setConfirmingAI]       = useState(false)
 
   useEffect(() => {
     fetchCategories()
@@ -148,9 +151,11 @@ export default function AdminAccounts() {
     setImageFiles([])
     setImagePreviews([])
     setDetectedSkins([])
-    setConfirmedSkins([])
-    setSkinDetectImage('')
     setShowDetectPanel(false)
+    setSelectedSkins([])
+    setShowSkinPicker(false)
+    setSkinPickerSearch('')
+    setSkinPickerHero('')
     setShowModal(true)
   }
 
@@ -160,9 +165,13 @@ export default function AdminAccounts() {
       const detail = data.data
 
       setEditing(detail)
+      setSelectedSkins(detail.skins_rel?.map(s => ({
+        skinName: s.skinName, heroName: s.heroName || '', rarity: s.tier || 'COMMON', templateId: s.templateId || null
+      })) || [])
+      setShowSkinPicker(false)
+      setSkinPickerSearch('')
+      setSkinPickerHero('')
       setDetectedSkins([])
-      setConfirmedSkins([])
-      setSkinDetectImage('')
       setShowDetectPanel(false)
       setForm({
         ...defaultForm,
@@ -209,13 +218,23 @@ export default function AdminAccounts() {
     try {
       const fd = new FormData()
 
+      // Sync skinNames từ selectedSkins trước khi submit
+      const currentSkinNames = selectedSkins.map(s => s.skinName).join('\n')
+
       Object.entries(form).forEach(([k, v]) => {
-        if (NULLABLE_FIELDS.includes(k)) {
+        if (k === 'skinNames') {
+          // Dùng selectedSkins thay vì form.skinNames để đảm bảo sync
+          fd.append('skinNames', currentSkinNames)
+        } else if (NULLABLE_FIELDS.includes(k)) {
           fd.append(k, v ?? '')
         } else if (v !== null && v !== undefined && v !== '') {
           fd.append(k, v)
         }
       })
+
+      // Gửi kèm skin data đầy đủ (có templateId, heroName) để backend lưu đúng
+      // Luôn gửi skinsData kể cả rỗng để backend biết phải xóa hết skin cũ
+      fd.append('skinsData', JSON.stringify(selectedSkins))
 
       imageFiles.forEach(f => fd.append('images', f))
 
@@ -240,60 +259,131 @@ export default function AdminAccounts() {
     }
   }
 
-  // ── AI Skin Detection handlers ──────────────────────────
+  // ── Skin Picker: load templates ────────────────────────
+  const openSkinPicker = async () => {
+    setShowSkinPicker(true)
+    if (skinTemplates.length) return
+    setSkinPickerLoading(true)
+    try {
+      const [tplRes, heroRes] = await Promise.all([
+        api.get('/skin-templates?limit=500'),
+        api.get('/skin-templates/heroes'),
+      ])
+      setSkinTemplates(tplRes.data.data || [])
+      setSkinPickerHeroes(heroRes.data.data || [])
+    } catch { toast.error('Không load được danh sách skin') }
+    finally { setSkinPickerLoading(false) }
+  }
+
+  const toggleSelectedSkin = (tpl) => {
+    setSelectedSkins(prev => {
+      const exists = prev.find(s => s.templateId === tpl.id)
+      if (exists) return prev.filter(s => s.templateId !== tpl.id)
+      return [...prev, { skinName: tpl.skinName, heroName: tpl.heroName, rarity: tpl.rarity, templateId: tpl.id }]
+    })
+  }
+
+  // Fix: dùng cả templateId và skinName để xác định đúng skin cần xóa
+  const removeSkin = async (templateId, skinName) => {
+    const newSkins = selectedSkins.filter(s =>
+      templateId ? s.templateId !== templateId : s.skinName !== skinName
+    )
+    setSelectedSkins(newSkins)
+
+    // Nếu đang edit → lưu luôn vào DB không cần bấm Cập nhật
+    if (editing?.id) {
+      try {
+        await api.post(`/skin-templates/confirm/${editing.id}`, { skins: newSkins })
+      } catch {
+        toast.error('Lỗi xóa skin')
+      }
+    }
+  }
+
+  const handleSaveSkins = async () => {
+    if (!editing?.id) {
+      const names = selectedSkins.map(s => s.skinName).join('\n')
+      setForm(p => ({ ...p, skinNames: names, skins: String(selectedSkins.length) }))
+      setShowSkinPicker(false)
+      toast.success(`Đã chọn ${selectedSkins.length} skin`)
+      return
+    }
+    try {
+      await api.post(`/skin-templates/confirm/${editing.id}`, { skins: selectedSkins })
+      const names = selectedSkins.map(s => s.skinName).join('\n')
+      setForm(p => ({ ...p, skinNames: names, skins: String(selectedSkins.length) }))
+      toast.success(`Đã lưu ${selectedSkins.length} skin`)
+      setShowSkinPicker(false)
+    } catch { toast.error('Lỗi lưu skin') }
+  }
+
+  // ── AI Detect ────────────────────────────────────────────
+  // Logic mới: AI detect chỉ hiển thị ở panel dưới.
+  // KHÔNG tự động thêm vào selectedSkins (ô skin nổi bật).
+  // Admin phải click "+" trên từng skin để thêm lên trên.
   const handleDetectSkins = async () => {
+    const imageUrl = imagePreviews[0] || editing?.images?.[0]?.url || editing?.thumbnailUrl
+    if (!imageUrl) return toast.error('Cần có ảnh account để AI phân tích')
     if (!editing?.id) return toast.error('Lưu account trước khi dùng AI detect')
 
-    // Dùng ảnh đang preview hoặc ảnh đã upload
-    const imageUrl = skinDetectImage || imagePreviews[0] || editing?.images?.[0]?.url || editing?.thumbnailUrl
-    if (!imageUrl) return toast.error('Cần có ảnh account để AI phân tích')
-
     setDetectLoading(true)
-    setDetectedSkins([])
     setShowDetectPanel(true)
+    setDetectedSkins([])
 
     try {
       const { data } = await api.post(`/skin-templates/detect/${editing.id}`, { imageUrl })
       const skins = data.data || []
       setDetectedSkins(skins)
-      // Auto-check skins có confidence >= 0.80
-      setConfirmedSkins(skins.filter(s => s.confidence >= 0.80).map(s => s.skinName))
-      if (skins.length === 0) toast('Không nhận diện được skin nào, thử ảnh khác', { icon: '🔍' })
-      else toast.success(`AI nhận diện được ${skins.length} skin!`)
+      // Debug: xem backend tra confidence dang gi
+      console.log('[AI Detect]', skins.map(s => ({ name: s.skinName, conf: s.confidence, type: typeof s.confidence })))
+      if (skins.length) {
+        // Auto-add skin 100%: dung >= 0.99 de tranh float precision
+        const autoAdd = skins.filter(s =>
+  s.isMatched && Number(s.confidence) >= 0.95
+)
+        if (autoAdd.length) {
+          setSelectedSkins(prev => {
+            const existIds = new Set(prev.map(s => s.templateId).filter(Boolean))
+            const existNames = new Set(prev.map(s => s.skinName))
+            const toAdd = autoAdd
+              .filter(s => s.templateId ? !existIds.has(s.templateId) : !existNames.has(s.skinName))
+              .map(s => ({
+                skinName: s.skinName,
+                heroName: s.heroName || '',
+                rarity: s.rarity || 'COMMON',
+                templateId: s.templateId || null,
+              }))
+            return [...prev, ...toAdd]
+          })
+        }
+        toast.success(`AI nhận diện được ${skins.length} skin${autoAdd.length ? ` — tự thêm ${autoAdd.length} skin 100%` : ''}`)
+      } else {
+        toast('Không nhận diện được skin nào. Dùng "Chọn tay" để bổ sung.', { icon: '🔍' })
+      }
     } catch (e) {
       toast.error(e.response?.data?.message || 'Lỗi AI detect')
+      setShowDetectPanel(false)
     } finally {
       setDetectLoading(false)
     }
   }
 
-  const toggleSkinConfirm = (skinName) => {
-    setConfirmedSkins(prev =>
-      prev.includes(skinName) ? prev.filter(s => s !== skinName) : [...prev, skinName]
-    )
-  }
-
-  const handleSaveAISkins = async () => {
-    if (!editing?.id) return
-    if (!confirmedSkins.length) return toast.error('Chọn ít nhất 1 skin')
-
-    setConfirmingAI(true)
-    try {
-      const skinsToSave = detectedSkins.filter(s => confirmedSkins.includes(s.skinName))
-      await api.post(`/skin-templates/confirm/${editing.id}`, { skins: skinsToSave })
-
-      // Cập nhật skinNames trong form để textarea cũng show
-      const allNames = skinsToSave.map(s => s.skinName).join('\n')
-      setForm(p => ({ ...p, skinNames: allNames, skins: String(skinsToSave.length) }))
-
-      toast.success(`Đã lưu ${skinsToSave.length} skin AI vào account!`)
-      setShowDetectPanel(false)
-      setDetectedSkins([])
-    } catch (e) {
-      toast.error('Lỗi lưu skin AI')
-    } finally {
-      setConfirmingAI(false)
-    }
+  // Thêm một skin từ panel AI detect vào selectedSkins
+  const addDetectedSkin = (s) => {
+    setSelectedSkins(prev => {
+      const alreadyIn = prev.some(sel =>
+        s.templateId
+          ? sel.templateId === s.templateId
+          : sel.skinName === s.skinName
+      )
+      if (alreadyIn) return prev
+      return [...prev, {
+        skinName: s.skinName,
+        heroName: s.heroName || '',
+        rarity: s.rarity || 'COMMON',
+        templateId: s.templateId || null,
+      }]
+    })
   }
 
   const handleDelete = async id => {
@@ -324,7 +414,6 @@ export default function AdminAccounts() {
   }
 
   const getAccountCategory = acc => acc.categoryRelations?.[0]?.category
-
 
   const facebookStatusMap = {
     LIVE: {
@@ -441,7 +530,6 @@ export default function AdminAccounts() {
             className="input-gaming text-sm py-2 pl-9"
           />
         </div>
-
 
         <select
           value={accInfoFilter}
@@ -665,7 +753,6 @@ export default function AdminAccounts() {
                   </select>
                 </div>
 
-
                 {[
                   ['price', 'Giá (VNĐ) *', 'number', '500000'],
                   ['originalPrice', 'Giá gốc', 'number', ''],
@@ -697,7 +784,6 @@ export default function AdminAccounts() {
                   </div>
                 ))}
 
-
                 <div>
                   <label className="text-xs text-white/40 font-display uppercase tracking-wider block mb-1">
                     Liên kết Facebook
@@ -714,135 +800,267 @@ export default function AdminAccounts() {
                 </div>
               </div>
 
-              <div className="mb-4">
-                {/* Header skin section */}
-                <div className="flex items-center justify-between mb-2">
+              {/* ── SKIN SECTION ─────────────────────────────── */}
+              <div className="mb-4 space-y-2">
+
+                {/* Header */}
+                <div className="flex items-center justify-between">
                   <label className="text-xs text-white/40 font-display uppercase tracking-wider flex items-center gap-2">
                     <FontAwesomeIcon icon={faStar} />
-                    Danh sách skin nổi bật
+                    Skin nổi bật
+                    {selectedSkins.length > 0 && (
+                      <span className="bg-purple-500/30 text-purple-300 text-[10px] rounded-full px-1.5 py-0.5">
+                        {selectedSkins.length}
+                      </span>
+                    )}
                   </label>
-                  {editing ? (
+                  <div className="flex items-center gap-2">
+                    {/* Nút Gen AI */}
                     <button
                       type="button"
                       onClick={handleDetectSkins}
                       disabled={detectLoading}
-                      className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-300 hover:bg-purple-500/30 hover:text-purple-200 transition-all"
+                      title={!editing ? 'Lưu account trước' : ''}
+                      className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-300 hover:bg-purple-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                     >
-                      {detectLoading ? (
-                        <><FontAwesomeIcon icon={faSpinner} className="animate-spin" /> Đang phân tích...</>
-                      ) : (
-                        <><FontAwesomeIcon icon={faWandMagicSparkles} /> Gen skin AI</>
-                      )}
+                      {detectLoading
+                        ? <><FontAwesomeIcon icon={faSpinner} className="animate-spin" /> Đang phân tích...</>
+                        : <><FontAwesomeIcon icon={faWandMagicSparkles} /> Gen AI</>
+                      }
                     </button>
-                  ) : (
-                    <span className="text-xs text-white/20 italic">Lưu account trước để dùng AI detect</span>
-                  )}
+                    {/* Nút chọn tay */}
+                    <button
+                      type="button"
+                      onClick={openSkinPicker}
+                      className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white/60 hover:bg-white/15 hover:text-white transition-all"
+                    >
+                      <FontAwesomeIcon icon={faLayerGroup} /> Chọn tay
+                    </button>
+                  </div>
                 </div>
 
-                {/* Textarea nhập tay */}
-                <textarea
-                  value={form.skinNames || ''}
-                  onChange={e => setForm(p => ({ ...p, skinNames: e.target.value }))}
-                  rows={3}
-                  placeholder="Nhập tên skin thủ công, mỗi dòng 1 skin — hoặc dùng nút Gen AI bên trên"
-                  className="input-gaming text-sm py-2 resize-none w-full"
-                />
+                {/* Selected skins chips — ô skin nổi bật */}
+                {selectedSkins.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 p-2 rounded-lg bg-white/3 border border-white/10 min-h-[40px]">
+                    {selectedSkins.map((s, i) => (
+                      <motion.span
+                        key={s.templateId || s.skinName}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="inline-flex items-center gap-1 text-xs bg-purple-500/20 border border-purple-500/30 text-purple-200 rounded-full pl-2.5 pr-1 py-0.5"
+                      >
+                        {s.skinName}
+                        <button
+                          type="button"
+                          onClick={() => removeSkin(s.templateId, s.skinName)}
+                          className="w-4 h-4 rounded-full hover:bg-purple-500/50 flex items-center justify-center ml-0.5 text-purple-300 hover:text-white transition-colors"
+                        >
+                          <FontAwesomeIcon icon={faXmark} className="text-[9px]" />
+                        </button>
+                      </motion.span>
+                    ))}
+                  </div>
+                )}
 
-                {/* AI Detect Panel */}
+                {selectedSkins.length === 0 && (
+                  <div className="text-center py-3 rounded-lg border border-dashed border-white/10 text-white/20 text-xs">
+                    Chưa chọn skin — dùng Gen AI hoặc Chọn tay
+                  </div>
+                )}
+
+                {/* AI Detect result panel — chỉ hiển thị kết quả, admin click + để thêm */}
                 <AnimatePresence>
-                  {showDetectPanel && (
+                  {showDetectPanel && detectedSkins.length > 0 && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="mt-3 rounded-xl border border-purple-500/30 bg-purple-500/5 overflow-hidden"
+                      className="rounded-xl border border-purple-500/20 bg-purple-500/5 overflow-hidden"
                     >
                       <div className="p-3">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-xs text-purple-300 font-display uppercase tracking-wider flex items-center gap-2">
-                            <FontAwesomeIcon icon={faRobot} />
-                            Kết quả AI — chọn skin muốn lưu
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-purple-300 flex items-center gap-1.5">
+                            <FontAwesomeIcon icon={faWandMagicSparkles} className="text-[10px]" />
+                            Skin được gen từ AI — click <FontAwesomeIcon icon={faPlus} className="text-[9px]" /> để thêm vào skin nổi bật
                           </span>
                           <button type="button" onClick={() => setShowDetectPanel(false)} className="text-white/30 hover:text-white/60">
                             <FontAwesomeIcon icon={faXmark} className="text-xs" />
                           </button>
                         </div>
-
-                        {detectLoading ? (
-                          <div className="flex items-center justify-center py-6 gap-3 text-white/40">
-                            <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                            <span className="text-sm">Gemini Vision đang phân tích ảnh...</span>
-                          </div>
-                        ) : detectedSkins.length === 0 ? (
-                          <p className="text-center py-4 text-white/30 text-sm">
-                            <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
-                            Không nhận diện được skin. Thử ảnh rõ hơn.
-                          </p>
-                        ) : (
-                          <>
-                            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                              {detectedSkins.map((skin, i) => {
-                                const checked = confirmedSkins.includes(skin.skinName)
-                                const conf = Math.round((skin.confidence || 0) * 100)
-                                const confColor = conf >= 85 ? 'text-green-400' : conf >= 70 ? 'text-yellow-400' : 'text-red-400'
-                                return (
-                                  <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, x: -8 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.04 }}
-                                    onClick={() => toggleSkinConfirm(skin.skinName)}
-                                    className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all border ${
-                                      checked ? 'bg-purple-500/20 border-purple-500/40' : 'bg-white/3 border-white/10 hover:bg-white/8'
-                                    }`}
+                        <div className="flex flex-wrap gap-1.5">
+                          {detectedSkins.map((s, i) => {
+                            const conf = Math.round((s.confidence || 0) * 100)
+                            const isAdded = selectedSkins.some(sel =>
+                              s.templateId
+                                ? sel.templateId === s.templateId
+                                : sel.skinName === s.skinName
+                            )
+                            return (
+                              <span
+                                key={i}
+                                className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                                  isAdded
+                                    ? 'bg-green-500/10 border-green-500/30 text-green-300'
+                                    : 'bg-purple-500/10 border-purple-500/25 text-purple-200 hover:border-purple-500/50'
+                                }`}
+                              >
+                                {s.skinName}
+                                <span className="opacity-50">{conf}%</span>
+                                {!s.isMatched && <span className="text-yellow-400/70 ml-0.5">~</span>}
+                                {isAdded ? (
+                                  <FontAwesomeIcon icon={faCheck} className="text-[9px] ml-0.5 text-green-400" />
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => addDetectedSkin(s)}
+                                    className="w-3.5 h-3.5 rounded-full bg-purple-500/40 hover:bg-purple-500 flex items-center justify-center ml-0.5 transition-colors flex-shrink-0"
                                   >
-                                    <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-all ${
-                                      checked ? 'bg-purple-500 border-purple-500' : 'border-white/30'
-                                    }`}>
-                                      {checked && <FontAwesomeIcon icon={faCheckCircle} className="text-white text-[9px]" />}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-white text-xs font-medium truncate">{skin.skinName}</p>
-                                      {skin.heroName && <p className="text-white/40 text-[10px]">{skin.heroName}</p>}
-                                    </div>
-                                    <div className="text-right flex-shrink-0">
-                                      <span className={`text-xs font-bold ${confColor}`}>{conf}%</span>
-                                      {skin.templateId && <p className="text-[9px] text-green-400/60">✓ matched DB</p>}
-                                    </div>
-                                  </motion.div>
-                                )
-                              })}
-                            </div>
-
-                            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
-                              <span className="text-xs text-white/30 flex-1">Đã chọn {confirmedSkins.length}/{detectedSkins.length}</span>
-                              <button
-                                type="button"
-                                onClick={() => setConfirmedSkins(detectedSkins.map(s => s.skinName))}
-                                className="text-xs text-white/50 hover:text-white/80 px-2 py-1 rounded"
-                              >
-                                Chọn tất cả
-                              </button>
-                              <button
-                                type="button"
-                                onClick={handleSaveAISkins}
-                                disabled={confirmingAI || !confirmedSkins.length}
-                                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50 transition-all"
-                              >
-                                {confirmingAI
-                                  ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                                  : <FontAwesomeIcon icon={faFloppyDisk} />
-                                }
-                                Lưu {confirmedSkins.length} skin
-                              </button>
-                            </div>
-                          </>
-                        )}
+                                    <FontAwesomeIcon icon={faPlus} className="text-[8px] text-white" />
+                                  </button>
+                                )}
+                              </span>
+                            )
+                          })}
+                        </div>
+                        <p className="text-white/20 text-[10px] mt-2">
+                          ✓ đã thêm vào skin nổi bật &nbsp;·&nbsp; ~ không match DB (vẫn có thể thêm)
+                        </p>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* ── SKIN PICKER MODAL ─────────────────────────── */}
+              <AnimatePresence>
+                {showSkinPicker && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+                    onClick={e => e.target === e.currentTarget && setShowSkinPicker(false)}
+                  >
+                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.95, opacity: 0 }}
+                      className="relative w-full max-w-2xl max-h-[80vh] flex flex-col glass rounded-2xl border border-white/10 overflow-hidden"
+                    >
+                      {/* Picker header */}
+                      <div className="flex items-center justify-between p-4 border-b border-white/10">
+                        <div>
+                          <h3 className="text-white font-display font-bold">Chọn skin nổi bật</h3>
+                          <p className="text-white/40 text-xs mt-0.5">Đã chọn {selectedSkins.length} skin</p>
+                        </div>
+                        <button type="button" onClick={() => setShowSkinPicker(false)} className="text-white/40 hover:text-white">
+                          <FontAwesomeIcon icon={faXmark} />
+                        </button>
+                      </div>
+
+                      {/* Filters */}
+                      <div className="p-3 border-b border-white/10 flex gap-2">
+                        <div className="relative flex-1">
+                          <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-xs" />
+                          <input
+                            type="text"
+                            placeholder="Tìm tên skin, tướng..."
+                            value={skinPickerSearch}
+                            onChange={e => setSkinPickerSearch(e.target.value)}
+                            className="input-gaming text-sm py-1.5 pl-8 w-full"
+                          />
+                        </div>
+                        <select
+                          value={skinPickerHero}
+                          onChange={e => setSkinPickerHero(e.target.value)}
+                          className="input-gaming text-sm py-1.5 max-w-[140px]"
+                        >
+                          <option value="">Tất cả tướng</option>
+                          {skinPickerHeroes.map(h => <option key={h} value={h}>{h}</option>)}
+                        </select>
+                      </div>
+
+                      {/* List */}
+                      <div className="flex-1 overflow-y-auto p-3">
+                        {skinPickerLoading ? (
+                          <div className="flex justify-center py-10 text-white/40">
+                            <FontAwesomeIcon icon={faSpinner} className="animate-spin text-xl" />
+                          </div>
+                        ) : (() => {
+                          const q = skinPickerSearch.toLowerCase()
+                          const filtered = skinTemplates.filter(t =>
+                            (!skinPickerHero || t.heroName === skinPickerHero) &&
+                            (!q || t.skinName.toLowerCase().includes(q) || t.heroName.toLowerCase().includes(q) || (t.aliases || '').toLowerCase().includes(q))
+                          )
+                          if (!filtered.length) return (
+                            <p className="text-center text-white/30 text-sm py-10">Không tìm thấy skin nào</p>
+                          )
+                          const grouped = filtered.reduce((acc, t) => {
+                            if (!acc[t.heroName]) acc[t.heroName] = []
+                            acc[t.heroName].push(t)
+                            return acc
+                          }, {})
+                          return Object.entries(grouped).map(([hero, skins]) => (
+                            <div key={hero} className="mb-4">
+                              <p className="text-white/40 text-xs font-display uppercase tracking-wider mb-1.5 px-1">{hero}</p>
+                              <div className="grid grid-cols-1 gap-1">
+                                {skins.map(tpl => {
+                                  const isSelected = selectedSkins.some(s => s.templateId === tpl.id)
+                                  const rarityColors = {
+                                    MYTHIC: 'text-red-400', LEGENDARY: 'text-yellow-400',
+                                    EPIC: 'text-purple-400', RARE: 'text-blue-400', COMMON: 'text-gray-400'
+                                  }
+                                  return (
+                                    <button
+                                      key={tpl.id}
+                                      type="button"
+                                      onClick={() => toggleSelectedSkin(tpl)}
+                                      className={`flex items-center gap-3 p-2 rounded-lg text-left transition-all border ${
+                                        isSelected
+                                          ? 'bg-purple-500/20 border-purple-500/40'
+                                          : 'bg-white/3 border-transparent hover:bg-white/8 hover:border-white/10'
+                                      }`}
+                                    >
+                                      {tpl.imageUrl ? (
+                                        <img src={tpl.imageUrl} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                                      ) : (
+                                        <div className="w-8 h-8 rounded bg-white/5 flex-shrink-0" />
+                                      )}
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-white text-xs font-medium truncate">{tpl.skinName}</p>
+                                        <p className={`text-[10px] ${rarityColors[tpl.rarity] || 'text-gray-400'}`}>{tpl.rarity}</p>
+                                      </div>
+                                      <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-all ${
+                                        isSelected ? 'bg-purple-500 border-purple-500' : 'border-white/20'
+                                      }`}>
+                                        {isSelected && <FontAwesomeIcon icon={faCheckCircle} className="text-white text-[9px]" />}
+                                      </div>
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          ))
+                        })()}
+                      </div>
+
+                      {/* Footer */}
+                      <div className="p-3 border-t border-white/10 flex items-center gap-3">
+                        <span className="text-xs text-white/40 flex-1">Đã chọn {selectedSkins.length} skin</span>
+                        <button type="button" onClick={() => setSelectedSkins([])} className="text-xs text-white/40 hover:text-white/70 px-2 py-1 rounded">
+                          Bỏ tất cả
+                        </button>
+                        <button type="button" onClick={handleSaveSkins}
+                          className="btn-primary text-sm flex items-center gap-2">
+                          <FontAwesomeIcon icon={faFloppyDisk} /> Lưu {selectedSkins.length} skin
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div className="mb-4">
                 <label className="text-xs text-white/40 font-display uppercase tracking-wider block mb-1">

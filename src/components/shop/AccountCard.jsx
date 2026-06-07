@@ -256,27 +256,28 @@ export default function AccountCard({ account }) {
           )}
         </div>
 
-        <div className="mt-auto pt-1">
-          <Link
-            to={`/shop/acc/${account.id}`}
-            className={`block w-full text-center rounded-lg font-display font-bold uppercase tracking-wide transition-all duration-300 ${isAvailable
-                ? 'bg-gradient-to-r from-neon-pink/60 to-neon-purple/60 hover:from-neon-pink hover:to-neon-purple text-white shadow-[0_0_10px_rgba(255,45,115,0.25)] hover:shadow-[0_0_25px_rgba(255,45,115,0.6)]'
-                : 'bg-white/5 text-white/30 cursor-not-allowed'
-              }`}
-          >
-            {isAvailable ? (
-              <>
-                <FontAwesomeIcon icon={faCartShopping} className="mr-2" />
-                Mua Ngay
-              </>
-            ) : (
-              <>
-                <FontAwesomeIcon icon={faCircleXmark} className="mr-2" />
-                Đã Bán
-              </>
-            )}
-          </Link>
-        </div>
+        <div className="mt-auto pt-2">
+  <Link
+    to={`/shop/acc/${account.id}`}
+    className={`w-full h-11 sm:h-12 rounded-xl font-display font-black uppercase tracking-wide transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base ${
+      isAvailable
+        ? 'bg-gradient-to-r from-neon-pink via-pink-500 to-neon-purple hover:from-pink-500 hover:to-purple-500 text-white shadow-[0_0_18px_rgba(255,45,115,0.28)] hover:shadow-[0_0_28px_rgba(255,45,115,0.5)] hover:-translate-y-0.5 active:scale-[0.98]'
+        : 'bg-white/5 text-white/30 cursor-not-allowed'
+    }`}
+  >
+    {isAvailable ? (
+      <>
+        <FontAwesomeIcon icon={faCartShopping} className="text-base" />
+        <span>Mua Ngay</span>
+      </>
+    ) : (
+      <>
+        <FontAwesomeIcon icon={faCircleXmark} className="text-base" />
+        <span>Đã Bán</span>
+      </>
+    )}
+  </Link>
+</div>
       </div>
     </motion.div>
   )
