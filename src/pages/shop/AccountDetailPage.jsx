@@ -41,6 +41,8 @@ import {
   faPhone,
   faCircleCheck,
   faXmark,
+  faChevronLeft,
+  faChevronRight,
 
   faFire,
   faStar,
@@ -127,7 +129,7 @@ export default function AccountDetailPage() {
   const [credentials, setCredentials] = useState(null)
   const [thumbsSwiper, setThumbsSwiper] = useState(null)
   const [activeTab, setActiveTab] = useState('info')
-  const [previewImage, setPreviewImage] = useState(null)
+  const [previewIndex, setPreviewIndex] = useState(null)
 
   const [couponInput, setCouponInput] = useState('')
   const [couponData, setCouponData] = useState(null)
@@ -339,12 +341,35 @@ export default function AccountDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           <div>
+            <style>{`
+              .acc-gallery .swiper-button-prev,
+              .acc-gallery .swiper-button-next {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.35);
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(4px);
+                transition: background 0.2s, border-color 0.2s;
+              }
+              .acc-gallery .swiper-button-prev:hover,
+              .acc-gallery .swiper-button-next:hover {
+                background: rgba(0, 0, 0, 0.55);
+                border-color: rgba(255, 255, 255, 0.7);
+              }
+              .acc-gallery .swiper-button-prev::after,
+              .acc-gallery .swiper-button-next::after {
+                font-size: 16px;
+                font-weight: 700;
+                color: #ffffff;
+              }
+            `}</style>
             <Swiper
               modules={[Thumbs, Navigation]}
               thumbs={{ swiper: thumbsSwiper }}
               navigation
               loop={images.length > 1}
-              className="rounded-xl overflow-hidden mb-3 h-72 sm:h-96"
+              className="acc-gallery rounded-xl overflow-hidden mb-3 h-72 sm:h-96"
             >
               {images.map((img, i) => (
                 <SwiperSlide key={i}>
@@ -352,7 +377,7 @@ export default function AccountDetailPage() {
                     src={img.url}
                     alt={account.title}
                     className="w-full h-full object-cover cursor-zoom-in"
-                    onClick={() => setPreviewImage(img.url)}
+                    onClick={() => setPreviewIndex(i)}
                     onError={e => {
                       e.target.src =
                         'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=400&fit=crop'
@@ -842,27 +867,55 @@ export default function AccountDetailPage() {
       </div>
 
       <AnimatePresence>
-        {previewImage && (
+        {previewIndex !== null && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
-            onClick={() => setPreviewImage(null)}
+            onClick={() => setPreviewIndex(null)}
           >
             <button
-              onClick={() => setPreviewImage(null)}
+              onClick={() => setPreviewIndex(null)}
               className="fixed top-24 right-6 text-white text-4xl hover:text-neon-pink transition-colors z-[9999] bg-black/50 rounded-full w-12 h-12 flex items-center justify-center"
             >
               <FontAwesomeIcon icon={faXmark} />
             </button>
 
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={e => {
+                    e.stopPropagation()
+                    setPreviewIndex(prev => (prev - 1 + images.length) % images.length)
+                  }}
+                  className="fixed left-4 sm:left-8 top-1/2 -translate-y-1/2 z-[9999] w-12 h-12 flex items-center justify-center rounded-xl border border-white/35 bg-black/30 text-white text-xl backdrop-blur-sm hover:bg-black/55 hover:border-white/70 transition-colors"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} />
+                </button>
+                <button
+                  onClick={e => {
+                    e.stopPropagation()
+                    setPreviewIndex(prev => (prev + 1) % images.length)
+                  }}
+                  className="fixed right-4 sm:right-8 top-1/2 -translate-y-1/2 z-[9999] w-12 h-12 flex items-center justify-center rounded-xl border border-white/35 bg-black/30 text-white text-xl backdrop-blur-sm hover:bg-black/55 hover:border-white/70 transition-colors"
+                >
+                  <FontAwesomeIcon icon={faChevronRight} />
+                </button>
+
+                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] px-3 py-1 rounded-full bg-black/50 border border-white/20 text-white text-sm">
+                  {previewIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
+
             <motion.img
+              key={previewIndex}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: 'spring', damping: 20 }}
-              src={previewImage}
+              src={images[previewIndex].url}
               alt=""
               className="max-w-full max-h-[90vh] rounded-2xl shadow-[0_0_60px_rgba(255,45,115,0.25)] object-contain"
               onClick={e => e.stopPropagation()}
